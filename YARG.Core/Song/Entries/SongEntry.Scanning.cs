@@ -107,6 +107,7 @@ namespace YARG.Core.Song
                 || parts.ProDrums.IsActive()
                 || parts.FiveLaneDrums.IsActive()
                 || parts.EliteDrums.IsActive()
+                || parts.SixLaneDrums.IsActive()
                 || parts.ProGuitar_17Fret.IsActive()
                 || parts.ProGuitar_22Fret.IsActive()
                 || parts.ProBass_17Fret.IsActive()

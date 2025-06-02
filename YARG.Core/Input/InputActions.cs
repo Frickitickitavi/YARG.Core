@@ -219,20 +219,20 @@
         /// <summary>Kick pedal hit velocity.</summary>
         Kick = 7,
 
-        /// <summary>(4-lane and 5-lane) red drum hit velocity.</summary>
+        /// <summary>(4-lane and 5-lane only) red drum hit velocity.</summary>
         /// <remarks>Alias of <see cref="Drum1"/>.</remarks>
         RedDrum = Drum1,
-        /// <summary>(4-lane only) yellow drum hit velocity.</summary>
+        /// <summary>(4-lane and 6-lane only only) yellow drum hit velocity.</summary>
         /// <remarks>Alias of <see cref="Drum2"/>.</remarks>
         YellowDrum = Drum2,
-        /// <summary>(4-lane and 5-lane) blue drum hit velocity.</summary>
+        /// <summary>(4-lane, 5-lane, and 6-lane) blue drum hit velocity.</summary>
         /// <remarks>Alias of <see cref="Drum3"/>.</remarks>
         BlueDrum = Drum3,
-        /// <summary>(4-lane and 5-lane) green drum hit velocity.</summary>
+        /// <summary>(4-lane, 5-lane, and 6-lane) green drum hit velocity.</summary>
         /// <remarks>Alias of <see cref="Drum4"/>.</remarks>
         GreenDrum = Drum4,
 
-        /// <summary>(4-lane and 5-lane) Yellow cymbal hit velocity.</summary>
+        /// <summary>(4-lane and 5-lane only) Yellow cymbal hit velocity.</summary>
         /// <remarks>Alias of <see cref="Cymbal1"/>.</remarks>
         YellowCymbal = Cymbal1,
         /// <summary>(5-lane only) Orange cymbal hit velocity.</summary>
@@ -244,6 +244,15 @@
         /// <summary>(4-lane only) Green cymbal hit velocity. Red cymbal under lefty flip.</summary>
         /// <remarks>Alias of <see cref="Cymbal3"/>.</remarks>
         GreenCymbal = Cymbal3,
+        /// <summary>(6-lane only) Red cymbal hit velocity.</summary>
+        /// <remarks>Alias of <see cref="Cymbal1"/></remarks>
+        RedCymbal = Cymbal1,
+        /// <summary>(6-lane only) Silver cymbal hit velocity.</summary>
+        /// <remarks>Alias of <see cref="Cymbal2"/></remarks>
+        SilverCymbal = Cymbal2,
+        /// <summary>(6-lane only) Silver cymbal hit velocity.</summary>
+        /// <remarks>Alias of <see cref="Cymbal2"/></remarks>
+        PurpleCymbal = Cymbal3,
     }
 
     /// <summary>

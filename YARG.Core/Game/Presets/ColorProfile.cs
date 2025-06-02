@@ -31,6 +31,9 @@ namespace YARG.Core.Game
         [SettingSubSection]
         public FiveLaneDrumsColors FiveLaneDrums;
         [SettingSubSection]
+        public SixLaneDrumsColors SixLaneDrums;
+
+        [SettingSubSection]
         public ProKeysColors ProKeys;
 
         public ColorProfile(string name, bool defaultPreset = false) : base(name, defaultPreset)
@@ -38,6 +41,7 @@ namespace YARG.Core.Game
             FiveFretGuitar = new FiveFretGuitarColors();
             FourLaneDrums = new FourLaneDrumsColors();
             FiveLaneDrums = new FiveLaneDrumsColors();
+            SixLaneDrums = new SixLaneDrumsColors();
             ProKeys = new ProKeysColors();
         }
 

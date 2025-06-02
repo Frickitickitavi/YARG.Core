@@ -16,6 +16,7 @@ namespace YARG.Core.Chart
             {
                 GameMode.FourLaneDrums => LoadDrumsTrack(instrument, CreateFourLaneDrumNote),
                 GameMode.FiveLaneDrums => LoadDrumsTrack(instrument, CreateFiveLaneDrumNote),
+                GameMode.SixLaneDrums => LoadDrumsTrack(instrument, CreateSixLaneDrumNote),
                 _ => throw new ArgumentException($"Instrument {instrument} is not a drums instrument!", nameof(instrument))
             };
         }
@@ -47,6 +48,17 @@ namespace YARG.Core.Chart
         private DrumNote CreateFiveLaneDrumNote(MoonNote moonNote, Dictionary<MoonPhrase.Type, MoonPhrase> currentPhrases)
         {
             var pad = GetFiveLaneDrumPad(moonNote);
+            var noteType = GetDrumNoteType(moonNote);
+            var generalFlags = GetGeneralFlags(moonNote, currentPhrases);
+            var drumFlags = GetDrumNoteFlags(moonNote, currentPhrases);
+
+            double time = _moonSong.TickToTime(moonNote.tick);
+            return new DrumNote(pad, noteType, drumFlags, generalFlags, time, moonNote.tick);
+        }
+
+        private DrumNote CreateSixLaneDrumNote(MoonNote moonNote, Dictionary<MoonPhrase.Type, MoonPhrase> currentPhrases)
+        {
+            var pad = GetSixLaneDrumPad(moonNote);
             var noteType = GetDrumNoteType(moonNote);
             var generalFlags = GetGeneralFlags(moonNote, currentPhrases);
             var drumFlags = GetDrumNoteFlags(moonNote, currentPhrases);
@@ -203,6 +215,89 @@ namespace YARG.Core.Chart
             }
 
             return pad;
+        }
+
+        private SixLaneDrumPad GetSixLaneDrumPad(MoonNote moonNote)
+        {
+            return _settings.DrumsType switch
+            {
+                DrumsType.FiveLane => GetSixLaneFromFiveLane(moonNote),
+                DrumsType.FourLane => GetSixLaneFromFourLane(moonNote),
+                _ => throw new InvalidOperationException($"Unexpected drums type {_settings.DrumsType}! (Drums type should have been calculated by now)")
+            };
+        }
+
+        private SixLaneDrumPad GetSixLaneFromFourLane(MoonNote moonNote)
+        {
+            // Conversion table:
+            // | 4-lane Pro    | 6-lane |
+            // | :---------    | :----- |
+            // | Red           | Yellow |
+            // | Yellow cymbal | Red    |
+            // | Yellow tom    | Blue   |
+            // | Blue cymbal   | Purple |
+            // | Blue tom      | Blue   |
+            // | Green cymbal  | Silver |
+            // | Green tom     | Green  |
+            // | Y tom + B tom | B + G  |
+
+            var fourLanePad = MoonNoteToFourLane(moonNote);
+            var pad = fourLanePad switch
+            {
+                FourLaneDrumPad.Kick => SixLaneDrumPad.Kick,
+                FourLaneDrumPad.RedDrum => SixLaneDrumPad.Yellow,
+                FourLaneDrumPad.YellowCymbal => SixLaneDrumPad.Red,
+                FourLaneDrumPad.YellowDrum => SixLaneDrumPad.Blue,
+                FourLaneDrumPad.BlueCymbal => SixLaneDrumPad.Purple,
+                FourLaneDrumPad.BlueDrum => SixLaneDrumPad.Blue,
+                FourLaneDrumPad.GreenCymbal => SixLaneDrumPad.Silver,
+                FourLaneDrumPad.GreenDrum => SixLaneDrumPad.Green,
+                _ => throw new InvalidOperationException($"Invalid four lane drum pad {fourLanePad}!")
+            };
+
+            // Handle special cases
+            if (pad is SixLaneDrumPad.Blue)
+            {
+                foreach (var note in moonNote.chord)
+                {
+                    if (note == moonNote)
+                        continue;
+
+                    var otherPad = MoonNoteToFourLane(note);
+                    pad = (pad, otherPad) switch
+                    {
+                        // (Calculated pad, other note in chord) => corrected pad to prevent same-color overlapping
+                        (SixLaneDrumPad.Blue, FourLaneDrumPad.YellowDrum) => SixLaneDrumPad.Green,
+                        _ => pad
+                    };
+                }
+            }
+
+            return pad;
+        }
+
+        private SixLaneDrumPad GetSixLaneFromFiveLane(MoonNote moonNote)
+        {
+            // Conversion table:
+            // | 5-lane | 6-lane        |
+            // | :----- | :---------    |
+            // | Red    | Yellow        |
+            // | Yellow | Red cymbal    |
+            // | Blue   | Blue tom      |
+            // | Orange | Purple cymbal |
+            // | Green  | Green tom     |
+
+            var fiveLanePad = MoonNoteToFiveLane(moonNote);
+            return fiveLanePad switch
+            {
+                FiveLaneDrumPad.Kick => SixLaneDrumPad.Kick,
+                FiveLaneDrumPad.Red => SixLaneDrumPad.Yellow,
+                FiveLaneDrumPad.Yellow => SixLaneDrumPad.Red,
+                FiveLaneDrumPad.Blue => SixLaneDrumPad.Blue,
+                FiveLaneDrumPad.Orange => SixLaneDrumPad.Purple,
+                FiveLaneDrumPad.Green => SixLaneDrumPad.Green,
+                _ => throw new InvalidOperationException($"Invalid five lane drum pad {fiveLanePad}!")
+            };
         }
 
         private FourLaneDrumPad MoonNoteToFourLane(MoonNote moonNote)

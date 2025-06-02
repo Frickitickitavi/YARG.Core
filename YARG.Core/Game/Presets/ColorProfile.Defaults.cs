@@ -13,6 +13,7 @@ namespace YARG.Core.Game
         private static readonly Color DefaultYellow = Color.FromArgb(0xFF, 0xFF, 0xE9, 0x00); // #FFE900
         private static readonly Color DefaultBlue   = Color.FromArgb(0xFF, 0x00, 0xBF, 0xFF); // #00BFFF
         private static readonly Color DefaultOrange = Color.FromArgb(0xFF, 0xFF, 0x84, 0x00); // #FF8400
+        private static readonly Color DefaultSilver = Color.FromArgb(0xFF, 0xAA, 0xAA, 0xAA); // #DDDDDD
 
         private static readonly Color DefaultStarpower = Color.White; // #FFFFFF
 

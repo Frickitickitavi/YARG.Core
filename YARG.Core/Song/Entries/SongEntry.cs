@@ -225,6 +225,7 @@ namespace YARG.Core.Song
 
                     Instrument.FourLaneDrums => _parts.FourLaneDrums,
                     Instrument.FiveLaneDrums => _parts.FiveLaneDrums,
+                    Instrument.SixLaneDrums => _parts.SixLaneDrums,
                     Instrument.ProDrums => _parts.ProDrums,
 
                     Instrument.EliteDrums => _parts.EliteDrums,
@@ -264,6 +265,7 @@ namespace YARG.Core.Song
 
                 Instrument.FourLaneDrums => _parts.FourLaneDrums.IsActive(),
                 Instrument.FiveLaneDrums => _parts.FiveLaneDrums.IsActive(),
+                Instrument.SixLaneDrums => _parts.SixLaneDrums.IsActive(),
                 Instrument.ProDrums => _parts.ProDrums.IsActive(),
 
                 Instrument.EliteDrums => _parts.EliteDrums.IsActive(),

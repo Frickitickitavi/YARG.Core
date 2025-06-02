@@ -33,6 +33,12 @@ namespace YARG.Core.Chart
         {
         }
 
+        public DrumNote(SixLaneDrumPad pad, DrumNoteType noteType, DrumNoteFlags drumFlags,
+            NoteFlags flags, double time, uint tick)
+            : this((int)pad, noteType, drumFlags, flags, time, tick)
+        {
+        }
+
         public DrumNote(int pad, DrumNoteType noteType, DrumNoteFlags drumFlags, NoteFlags flags, double time, uint tick)
             : base(flags, time, 0, tick, 0)
         {
@@ -113,6 +119,18 @@ namespace YARG.Core.Chart
         Blue,
         Orange,
         Green,
+    }
+
+    public enum SixLaneDrumPad
+    {
+        Kick,
+
+        Red,
+        Silver,
+        Yellow,
+        Blue,
+        Green,
+        Purple
     }
 
     public enum DrumNoteType

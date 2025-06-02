@@ -60,6 +60,8 @@ namespace YARG.Core.Chart
         public InstrumentTrack<DrumNote> ProDrums { get; set; } = new(Instrument.ProDrums);
         public InstrumentTrack<DrumNote> FiveLaneDrums { get; set; } = new(Instrument.FiveLaneDrums);
 
+        public InstrumentTrack<DrumNote> SixLaneDrums { get; set; } = new(Instrument.SixLaneDrums);
+
         // public InstrumentTrack<DrumNote> EliteDrums { get; set; } = new(Instrument.EliteDrums);
 
         public IEnumerable<InstrumentTrack<DrumNote>> DrumsTracks
@@ -69,6 +71,7 @@ namespace YARG.Core.Chart
                 yield return FourLaneDrums;
                 yield return ProDrums;
                 yield return FiveLaneDrums;
+                yield return SixLaneDrums;
             }
         }
 
@@ -132,6 +135,7 @@ namespace YARG.Core.Chart
             FourLaneDrums = loader.LoadDrumsTrack(Instrument.FourLaneDrums);
             ProDrums = loader.LoadDrumsTrack(Instrument.ProDrums);
             FiveLaneDrums = loader.LoadDrumsTrack(Instrument.FiveLaneDrums);
+            SixLaneDrums = loader.LoadDrumsTrack(Instrument.SixLaneDrums);
 
             // EliteDrums = loader.LoadDrumsTrack(Instrument.EliteDrums);
 
@@ -199,6 +203,9 @@ namespace YARG.Core.Chart
 
             if (!song.FiveLaneDrums.IsEmpty)
                 FiveLaneDrums = song.FiveLaneDrums;
+
+            if (!song.SixLaneDrums.IsEmpty)
+                SixLaneDrums = song.SixLaneDrums;
 
             if (!song.ProGuitar_17Fret.IsEmpty)
                 ProGuitar_17Fret = song.ProGuitar_17Fret;
@@ -272,6 +279,7 @@ namespace YARG.Core.Chart
                 Instrument.FourLaneDrums => FourLaneDrums,
                 Instrument.ProDrums => ProDrums,
                 Instrument.FiveLaneDrums => FiveLaneDrums,
+                Instrument.SixLaneDrums => SixLaneDrums,
                 _ => throw new ArgumentException($"Instrument {instrument} is not a drums instrument!")
             };
         }

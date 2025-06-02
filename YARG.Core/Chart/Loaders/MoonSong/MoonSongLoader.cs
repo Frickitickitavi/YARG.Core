@@ -402,6 +402,7 @@ namespace YARG.Core.Chart
 
             GameMode.FourLaneDrums => MoonChart.GameMode.Drums,
             GameMode.FiveLaneDrums => MoonChart.GameMode.Drums,
+            GameMode.SixLaneDrums => MoonChart.GameMode.Drums,
 
             GameMode.ProGuitar => MoonChart.GameMode.ProGuitar,
             GameMode.ProKeys => MoonChart.GameMode.ProKeys,
@@ -426,6 +427,7 @@ namespace YARG.Core.Chart
 
             Instrument.FourLaneDrums or
             Instrument.FiveLaneDrums or
+            Instrument.SixLaneDrums or
             Instrument.ProDrums => MoonSong.MoonInstrument.Drums,
 
             Instrument.ProGuitar_17Fret => MoonSong.MoonInstrument.ProGuitar_17Fret,

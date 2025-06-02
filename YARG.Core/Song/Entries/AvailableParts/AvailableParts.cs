@@ -22,6 +22,7 @@ namespace YARG.Core.Song
             FourLaneDrums = PartValues.Default,
             ProDrums = PartValues.Default,
             FiveLaneDrums = PartValues.Default,
+            SixLaneDrums = PartValues.Default,
 
             EliteDrums = PartValues.Default,
 
@@ -54,6 +55,7 @@ namespace YARG.Core.Song
         public PartValues FourLaneDrums;
         public PartValues ProDrums;
         public PartValues FiveLaneDrums;
+        public PartValues SixLaneDrums;
 
         public PartValues EliteDrums;
 

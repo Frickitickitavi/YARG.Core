@@ -49,7 +49,8 @@ namespace YARG.Core.Game
                     Modifier.RangeCompress,
 
                 GameMode.FourLaneDrums or
-                GameMode.FiveLaneDrums =>
+                GameMode.FiveLaneDrums or
+                GameMode.SixLaneDrums =>
                     Modifier.NoKicks    |
                     Modifier.NoDynamics,
 
