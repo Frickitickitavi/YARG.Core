@@ -1,4 +1,4 @@
-using System.Drawing;
+﻿using System.Drawing;
 using System.IO;
 using YARG.Core.Chart;
 using YARG.Core.Extensions;
@@ -83,6 +83,7 @@ namespace YARG.Core.Game
                     3 => YellowParticles,
                     4 => BlueParticles,
                     5 => OrangeParticles,
+                    7 => OpenParticles,
                     _ => default
                 };
             }

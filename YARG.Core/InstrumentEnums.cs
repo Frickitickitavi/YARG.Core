@@ -123,6 +123,13 @@ namespace YARG.Core
         AllNotes      = 3, // Old YARG style
     }
 
+    public enum FiveLaneKeysOpenLaneMode : byte
+    {
+        Never = 0,
+        Always = 1,
+        IfChartHasOpens = 2,
+    }
+
     public static class ChartEnumExtensions
     {
         public static GameMode ToNativeGameMode(this Instrument instrument)

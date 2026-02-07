@@ -12,7 +12,7 @@ namespace YARG.Core.Game
 {
     public class YargProfile
     {
-        private const int PROFILE_VERSION = 6;
+        private const int PROFILE_VERSION = 7;
 
         public Guid Id;
         public string Name;
@@ -37,6 +37,8 @@ namespace YARG.Core.Game
         public bool SwapCrashAndRide;
 
         public StarPowerActivationType StarPowerActivationType;
+
+        public FiveLaneKeysOpenLaneMode FiveLaneKeysOpenLaneMode;
 
         public int? AutoConnectOrder;
 
@@ -125,6 +127,7 @@ namespace YARG.Core.Game
             SwapSnareAndHiHat = false;
             SwapCrashAndRide = false;
             StarPowerActivationType = StarPowerActivationType.RightmostNote;
+            FiveLaneKeysOpenLaneMode = FiveLaneKeysOpenLaneMode.Never;
 
             // Set preset IDs to default
             ColorProfile = Game.ColorProfile.Default.Id;
@@ -195,6 +198,14 @@ namespace YARG.Core.Game
             } else
             {
                 GameMode = CurrentInstrument.ToNativeGameMode();
+            }
+
+            if (version >= 7)
+            {
+                FiveLaneKeysOpenLaneMode = (FiveLaneKeysOpenLaneMode) stream.ReadByte();
+            } else
+            {
+                FiveLaneKeysOpenLaneMode = FiveLaneKeysOpenLaneMode.Never;
             }
         }
 
@@ -386,6 +397,8 @@ namespace YARG.Core.Game
             writer.Write((byte) StarPowerActivationType);
 
             writer.Write((byte) GameMode);
+
+            writer.Write((byte) FiveLaneKeysOpenLaneMode);
         }
     }
 }
