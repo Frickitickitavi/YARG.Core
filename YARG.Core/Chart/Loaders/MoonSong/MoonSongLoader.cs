@@ -199,6 +199,7 @@ namespace YARG.Core.Chart
                     MoonPhrase.Type.Versus_Player1      => PhraseType.VersusPlayer1,
                     MoonPhrase.Type.Versus_Player2      => PhraseType.VersusPlayer2,
                     MoonPhrase.Type.TremoloLane         => PhraseType.TremoloLane,
+                    MoonPhrase.Type.KickLane            => PhraseType.KickLane,
                     MoonPhrase.Type.TrillLane           => PhraseType.TrillLane,
                     MoonPhrase.Type.ProDrums_Activation => PhraseType.DrumFill,
 
@@ -247,6 +248,9 @@ namespace YARG.Core.Chart
             var previous = moonNote.PreviousSeperateMoonNote;
             var next = moonNote.NextSeperateMoonNote;
 
+            var previousKickInRange = moonNote.PreviousKickWithinKickLaneRange;
+            var nextKickInRange = moonNote.NextKickWithinKickLaneRange;
+
             // Star power
             if (currentPhrases.TryGetValue(MoonPhrase.Type.Starpower, out var starPower) && IsEventInPhrase(moonNote, starPower))
             {
@@ -289,12 +293,12 @@ namespace YARG.Core.Chart
 
                 if (previous == null || !IsEventInPhrase(previous, trill))
                 {
-                    flags |= NoteFlags.LaneStart;
+                    flags |= NoteFlags.HandLaneStart;
                 }
 
                 if (next == null || !IsEventInPhrase(next, trill))
                 {
-                    flags |= NoteFlags.LaneEnd;
+                    flags |= NoteFlags.HandLaneEnd;
                 }
             }
 
@@ -308,12 +312,31 @@ namespace YARG.Core.Chart
 
                 if (previous == null || !IsEventInPhrase(previous, tremolo))
                 {
-                    flags |= NoteFlags.LaneStart;
+                    flags |= NoteFlags.HandLaneStart;
                 }
 
                 if (next == null || !IsEventInPhrase(next, tremolo))
                 {
-                    flags |= NoteFlags.LaneEnd;
+                    flags |= NoteFlags.HandLaneEnd;
+                }
+            }
+
+            // Kick lane
+            if (currentPhrases.TryGetValue(MoonPhrase.Type.KickLane, out var kickLane) && IsEventInPhrase(moonNote, kickLane))
+            {
+                // Sustains are not allowed in lanes, so make sure the note has zero length
+                moonNote.length = 0;
+
+                flags |= NoteFlags.KickLane;
+
+                if (previousKickInRange == null || !IsEventInPhrase(previousKickInRange, kickLane))
+                {
+                    flags |= NoteFlags.KickLaneStart;
+                }
+
+                if (nextKickInRange == null || !IsEventInPhrase(nextKickInRange, kickLane))
+                {
+                    flags |= NoteFlags.KickLaneEnd;
                 }
             }
 

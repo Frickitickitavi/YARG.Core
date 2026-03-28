@@ -17,10 +17,14 @@ namespace YARG.Core.Chart
         SoloStart = 1 << 4,
         SoloEnd   = 1 << 5,
 
-        Tremolo      = 1 << 6,
-        Trill      = 1 << 7,
-        LaneStart = 1 << 8,
-        LaneEnd   = 1 << 9,
+        Tremolo   = 1 << 6,
+        Trill     = 1 << 7,
+        HandLaneStart = 1 << 8,
+        HandLaneEnd   = 1 << 9,
+
+        KickLane      = 1 << 10,
+        KickLaneStart = 1 << 11,
+        KickLaneEnd   = 1 << 12,
     }
 
     public abstract class Note<TNote> : ChartEvent, ICloneable<TNote>
@@ -93,9 +97,15 @@ namespace YARG.Core.Chart
 
         public bool IsTremolo => (Flags & NoteFlags.Tremolo) != 0;
         public bool IsTrill => (Flags & NoteFlags.Trill) != 0;
-        public bool IsLane => IsTremolo || IsTrill;
-        public bool IsLaneStart => (Flags & NoteFlags.LaneStart) != 0;
-        public bool IsLaneEnd   => (Flags & NoteFlags.LaneEnd) != 0;
+        public bool IsKickLane => (Flags & NoteFlags.KickLane) != 0;
+        public bool IsHandLane => IsTremolo || IsTrill;
+        public bool IsHandLaneStart => (Flags & NoteFlags.HandLaneStart) != 0;
+        public bool IsHandLaneEnd   => (Flags & NoteFlags.HandLaneEnd) != 0;
+        public bool IsKickLaneStart => (Flags & NoteFlags.KickLaneStart) != 0;
+        public bool IsKickLaneEnd => (Flags & NoteFlags.KickLaneEnd) != 0;
+        public bool IsLaneStart => IsHandLaneStart || IsKickLaneStart;
+        public bool IsLaneEnd => IsHandLaneEnd || IsKickLaneEnd;
+        public bool IsLane => IsTremolo || IsTrill || IsKickLane;
 
         public virtual int LaneNote => -1;
 

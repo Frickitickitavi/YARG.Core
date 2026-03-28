@@ -11,6 +11,7 @@ namespace YARG.Core.Chart
         StarPower,   // Mainly for visuals, notes are already marked directly as SP
         TremoloLane, // Guitar strum lanes, single drum rolls
         TrillLane,   // Guitar trill lanes, double drum rolls
+        KickLane,    // Drums kick lanes
         DrumFill,    // Also for visuals
 
         // Versus modes (face-off and the like)

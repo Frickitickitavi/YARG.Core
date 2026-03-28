@@ -345,37 +345,54 @@ namespace YARG.Core.Chart
 
         private NoteFlags ModifyDrumLaneFlags(MoonNote moonNote, Dictionary<MoonPhrase.Type, MoonPhrase> currentPhrases, NoteFlags flags)
         {
-            MoonPhrase? lanePhrase = null;
+            MoonPhrase? handLanePhrase = null;
+            MoonPhrase? kickLanePhrase = null;
+
             bool isTrill = false;
 
             if ((flags & NoteFlags.Tremolo) != 0)
             {
-                currentPhrases.TryGetValue(MoonPhrase.Type.TremoloLane, out lanePhrase);
+                currentPhrases.TryGetValue(MoonPhrase.Type.TremoloLane, out handLanePhrase);
             }
             else if ((flags & NoteFlags.Trill) != 0)
             {
-                currentPhrases.TryGetValue(MoonPhrase.Type.TrillLane, out lanePhrase);
+                currentPhrases.TryGetValue(MoonPhrase.Type.TrillLane, out handLanePhrase);
                 isTrill = true;
             }
 
-            if (lanePhrase == null)
+            if ((flags & NoteFlags.KickLane) != 0)
             {
-                return flags;
+                currentPhrases.TryGetValue(MoonPhrase.Type.KickLane, out kickLanePhrase);
             }
 
-            if (_validLaneNotes == null || lanePhrase.tick != _lastLanePhraseTick)
+            if (handLanePhrase is not null)
             {
-                _lastLanePhraseTick = lanePhrase.tick;
-                _validLaneNotes = GetValidLaneNotes(moonNote, lanePhrase, isTrill);
+                if (_validLaneNotes == null || handLanePhrase.tick != _lastLanePhraseTick)
+                {
+                    _lastLanePhraseTick = handLanePhrase.tick;
+                    _validLaneNotes = GetValidLaneNotes(moonNote, handLanePhrase, isTrill);
+                }
+
+                if (!_validLaneNotes.Contains(moonNote.rawNote))
+                {
+                    flags &= ~NoteFlags.Tremolo;
+                    flags &= ~NoteFlags.Trill;
+                    flags &= ~NoteFlags.HandLaneStart;
+                    flags &= ~NoteFlags.HandLaneEnd;
+                }
             }
 
-            if (!_validLaneNotes.Contains(moonNote.rawNote))
+            if (kickLanePhrase is not null)
             {
-                flags &= ~NoteFlags.Tremolo;
-                flags &= ~NoteFlags.Trill;
-                flags &= ~NoteFlags.LaneStart;
-                flags &= ~NoteFlags.LaneEnd;
+                if (moonNote.rawNote is not 0) // Kick
+                {
+                    flags &= ~NoteFlags.KickLane;
+                    flags &= ~NoteFlags.KickLaneStart;
+                    flags &= ~NoteFlags.KickLaneEnd;
+                }
             }
+
+
 
             return flags;
 
@@ -393,7 +410,7 @@ namespace YARG.Core.Chart
                 {
                     if (noteRef.drumPad == MoonNote.DrumPad.Kick)
                     {
-                        // Don't allow kick lanes
+                        // Don't handle kick lanes here
                         continue;
                     }
 
@@ -442,17 +459,17 @@ namespace YARG.Core.Chart
                 }
 
                 int validNoteTotal = isTrill ? highestTotal - 2 : highestTotal;
-                List<int> validTremoloNotes = new();
+                List<int> validLaneNotes = new();
 
                 foreach (var (note, total) in noteTotals)
                 {
                     if (total >= validNoteTotal)
                     {
-                        validTremoloNotes.Add(note);
+                        validLaneNotes.Add(note);
                     }
                 }
 
-                return validTremoloNotes;
+                return validLaneNotes;
             }
         }
     }

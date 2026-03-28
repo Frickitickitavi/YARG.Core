@@ -18,6 +18,7 @@ namespace MoonscraperChartEditor.Song
 
             TremoloLane,
             TrillLane,
+            KickLane,
 
             // RB Pro Drums
 

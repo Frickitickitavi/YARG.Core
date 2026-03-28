@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using YARG.Core.Chart;
@@ -1211,14 +1211,24 @@ namespace YARG.Core.Engine
             }
 
             // Modify lane start and end points if selected practice sections cut off the charted boundaries
-            if (Notes[0].IsLane)
+            if (Notes[0].IsHandLane)
             {
-                Notes[0].ActivateFlag(NoteFlags.LaneStart);
+                Notes[0].ActivateFlag(NoteFlags.HandLaneStart);
             }
 
-            if (Notes[^1].IsLane)
+            if (Notes[^1].IsHandLane)
             {
-                Notes[^1].ActivateFlag(NoteFlags.LaneEnd);
+                Notes[^1].ActivateFlag(NoteFlags.HandLaneEnd);
+            }
+
+            if (Notes[0].IsKickLane)
+            {
+                Notes[0].ActivateFlag(NoteFlags.KickLaneStart);
+            }
+
+            if (Notes[^1].IsKickLane)
+            {
+                Notes[^1].ActivateFlag(NoteFlags.KickLaneEnd);
             }
 
             for (int i = 0; i < Chart.Phrases.Count; i++)
@@ -1237,8 +1247,7 @@ namespace YARG.Core.Engine
 
                 switch (thisPhrase.Type)
                 {
-                    case PhraseType.TremoloLane:
-                    case PhraseType.TrillLane:
+                    case PhraseType.TremoloLane or PhraseType.TrillLane or PhraseType.KickLane:
                         TotalLanes++;
                         break;
                 }

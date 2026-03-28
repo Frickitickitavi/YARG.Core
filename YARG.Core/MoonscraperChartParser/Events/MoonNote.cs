@@ -70,6 +70,8 @@ namespace MoonscraperChartEditor.Song
         private const int PRO_GUITAR_STRING_OFFSET = 5;
         private const int PRO_GUITAR_STRING_MASK = 0x07 << PRO_GUITAR_STRING_OFFSET;
 
+        private const int KICK_LANE_RANGE = 384; // Half-note worth of ticks; kick lanes won't bridge further than this
+
         public enum MoonNoteType
         {
             Natural,
@@ -243,6 +245,47 @@ namespace MoonscraperChartEditor.Song
                 while (previousMoonNote != null && previousMoonNote.tick == tick)
                     previousMoonNote = previousMoonNote.previous;
                 return previousMoonNote;
+            }
+        }
+
+        /// <summary>
+        /// Gets the previous kick in the link list
+        /// </summary>
+        public MoonNote? NextKickWithinKickLaneRange
+        {
+            get
+            {
+                var nextMoonNote = next;
+                while (nextMoonNote is not null && nextMoonNote.tick <= tick + KICK_LANE_RANGE)
+                {
+                    if (nextMoonNote.drumPad is DrumPad.Kick)
+                    {
+                        return nextMoonNote;
+                    }
+
+                    nextMoonNote = nextMoonNote.next;
+                }
+
+                return null;
+            }
+        }
+
+        public MoonNote? PreviousKickWithinKickLaneRange
+        {
+            get
+            {
+                var previousMoonNote = previous;
+                while (previousMoonNote is not null && previousMoonNote.tick >= tick - KICK_LANE_RANGE)
+                {
+                    if (previousMoonNote.drumPad is DrumPad.Kick)
+                    {
+                        return previousMoonNote;
+                    }
+
+                    previousMoonNote = previousMoonNote.previous;
+                }
+
+                return null;
             }
         }
 

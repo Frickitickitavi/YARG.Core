@@ -602,6 +602,9 @@ namespace MoonscraperChartEditor.Song.IO
                 processMap.Add(MidIOHelper.TRILL_LANE_NOTE, (ref EventProcessParams eventProcessParams) => {
                     ProcessLanePhrase(ref eventProcessParams, MoonPhrase.Type.TrillLane);
                 });
+                processMap.Add(MidIOHelper.KICK_LANE_NOTE, (ref EventProcessParams eventProcessParams) => {
+                    ProcessLanePhrase(ref eventProcessParams, MoonPhrase.Type.KickLane);
+                });
             }
 
             return processMap;
