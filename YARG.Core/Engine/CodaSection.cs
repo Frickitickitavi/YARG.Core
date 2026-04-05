@@ -64,17 +64,17 @@ namespace YARG.Core.Engine
         // Five fret instruments should pass something that can be interpreted as
         // a lane index. (We could take a GuitarAction or DrumsAction here, but
         // then we'd have to be a generic for no good reason)
-        public void HitLane(double time, int fret)
+        public void HitLane(double time, int action)
         {
-            var scoringZoneIndex = fret;
+            var scoringZoneIndex = action;
 
-            if (fret < 0)
+            if (action < 0)
             {
                 // How?
                 return;
             }
 
-            if (_actionToScoringZone != null && _actionToScoringZone.TryGetValue(fret, out int lane))
+            if (_actionToScoringZone != null && _actionToScoringZone.TryGetValue(action, out int lane))
 
             {
                 scoringZoneIndex = lane;
@@ -103,7 +103,7 @@ namespace YARG.Core.Engine
 
             LastHitTime[scoringZoneIndex] = time;
 
-            OnLaneHit?.Invoke(fret);
+            OnLaneHit?.Invoke(action);
         }
 
         public void MissNote()
