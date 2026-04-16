@@ -369,7 +369,7 @@ namespace YARG.Core.Engine.Keys.Engines
                 int button = 1 << i;
                 if ((pressed & button) != 0)
                 {
-                    coda.HitLane(time, i);
+                    coda.HitLane(time, i == 5 ? 6 : i); // Shift open back up, since HitLane is expecting the FiveLaneKeysAction index
                 }
             }
         }

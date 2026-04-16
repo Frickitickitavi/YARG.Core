@@ -45,7 +45,12 @@ namespace YARG.Core.Engine
         private const int MAX_FRET_SCORE  = 150;
 
         // Time taken for bonus to recharge after collection
-        private const double BONUS_RECHARGE_TIME = 1.5;
+        public const double BONUS_RECHARGE_TIME = 1.5;
+
+        public static float GetNormalizedTimeSinceLastHit(double visualTime, double mostRecentTime)
+        {
+            return (float)Math.Min(visualTime - mostRecentTime, BONUS_RECHARGE_TIME);
+        }
 
         public CodaSection(int lanes, double startTime, double endTime, bool fretMode = true)
         {
@@ -142,18 +147,6 @@ namespace YARG.Core.Engine
         }
 
         public double GetTimeSinceLastHit(int fret, double time) => time - LastCollectedTime[fret];
-
-        /// <summary>
-        /// Returns normalized time since last hit<br/>
-        /// Reaches 1.0f at BONUS_RECHARGE_TIME
-        /// </summary>
-        /// <param name="scoringZoneIndex"></param>
-        /// <param name="time"></param>
-        /// <returns>float range 0.0f to 1.0f</returns>
-        public float GetNormalizedTimeSinceLastHit(int scoringZoneIndex, double time)
-        {
-            return (float) (Math.Min(time - LastHitTime[scoringZoneIndex], BONUS_RECHARGE_TIME) / BONUS_RECHARGE_TIME);
-        }
 
         public void SetLaneIndexes(Dictionary<int, int> indexToLane)
         {
