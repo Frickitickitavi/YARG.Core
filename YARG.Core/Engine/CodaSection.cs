@@ -21,9 +21,6 @@ namespace YARG.Core.Engine
         // Last time bonus was collected for given lane
         private double[] LastCollectedTime { get; set; }
 
-        // We need this because collected and hit are different for non-guitar instruments
-        private double[] LastHitTime { get; set; }
-
         // Maximum bonus for one fret press or drum hit
         public int MaxLaneScore { get; private set; }
 
@@ -52,16 +49,15 @@ namespace YARG.Core.Engine
             return (float)Math.Min(visualTime - mostRecentTime, BONUS_RECHARGE_TIME);
         }
 
-        public CodaSection(int lanes, double startTime, double endTime, bool fretMode = true)
+        public CodaSection(int scoringZones, double startTime, double endTime)
         {
-            ScoringZones = lanes;
-            LastCollectedTime = new double[lanes];
-            LastHitTime = new double[lanes];
-            MaxLaneScore = fretMode ? MAX_FRET_SCORE : MAX_DRUM_SCORE;
+            ScoringZones = scoringZones;
+            LastCollectedTime = new double[scoringZones];
+            _fretMode = scoringZones == 1;
+            MaxLaneScore = _fretMode ? MAX_FRET_SCORE : MAX_DRUM_SCORE;
             TotalCodaBonus = 0;
             StartTime = startTime;
             EndTime = endTime;
-            _fretMode = fretMode;
             // MissNote will change this if necessary
             Success = true;
         }
@@ -106,8 +102,6 @@ namespace YARG.Core.Engine
                 TotalCodaBonus += bonusScore;
             }
 
-            LastHitTime[scoringZoneIndex] = time;
-
             OnLaneHit?.Invoke(fret);
         }
 
@@ -133,11 +127,6 @@ namespace YARG.Core.Engine
             for (int i = 0; i < LastCollectedTime.Length; i++)
             {
                 LastCollectedTime[i] = 0;
-            }
-
-            for (int i = 0; i < LastHitTime.Length; i++)
-            {
-                LastHitTime[i] = 0;
             }
         }
 
