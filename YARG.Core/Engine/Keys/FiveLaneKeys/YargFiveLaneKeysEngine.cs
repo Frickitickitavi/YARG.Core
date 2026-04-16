@@ -359,17 +359,13 @@ namespace YARG.Core.Engine.Keys.Engines
             // Figure out which keys changed
             var pressed = 1 << KeyHitThisUpdate.Value;
 
-            const int openBit = 1 << 6;
-            // Shift the open bit from bit 6 to bit 5
-            pressed = (pressed & ~openBit) | ((pressed & openBit) >> 1);
-
             // Hit the lane for any that were pressed
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < (int)FiveLaneKeysAction.Wildcard; i++)
             {
                 int button = 1 << i;
                 if ((pressed & button) != 0)
                 {
-                    coda.HitLane(time, i == 5 ? 6 : i); // Shift open back up, since HitLane is expecting the FiveLaneKeysAction index
+                    coda.HitLane(time, i);
                 }
             }
         }
