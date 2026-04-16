@@ -46,7 +46,7 @@ namespace YARG.Core.Engine
 
         public static float GetNormalizedTimeSinceLastHit(double visualTime, double mostRecentTime)
         {
-            return (float)Math.Min(visualTime - mostRecentTime, BONUS_RECHARGE_TIME);
+            return (float)(Math.Min(visualTime - mostRecentTime, BONUS_RECHARGE_TIME) / BONUS_RECHARGE_TIME);
         }
 
         public CodaSection(int scoringZones, double startTime, double endTime)
