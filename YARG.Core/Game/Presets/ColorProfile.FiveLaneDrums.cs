@@ -142,13 +142,16 @@ namespace YARG.Core.Game
             {
                 return index switch
                 {
-                    0 => KickNote,
+                    (int) FiveLaneDrumsFret.Kick => KickNote,
 
-                    1 => RedNote,
-                    2 => YellowNote,
-                    3 => BlueNote,
-                    4 => OrangeNote,
-                    5 => GreenNote,
+                    (int) FiveLaneDrumsFret.Red => RedNote,
+                    (int) FiveLaneDrumsFret.Yellow => YellowNote,
+                    (int) FiveLaneDrumsFret.Blue => BlueNote,
+                    (int) FiveLaneDrumsFret.Orange => OrangeNote,
+                    (int) FiveLaneDrumsFret.Green => GreenNote,
+
+                    // Exclusive to split-dedicated kick lanes
+                    (int) FiveLaneDrumsFret.DoubleKick => DoubleKickNote,
 
                     _ => default
                 };
@@ -173,13 +176,16 @@ namespace YARG.Core.Game
             {
                 return index switch
                 {
-                    0 => KickStarpower,
+                    (int) FiveLaneDrumsFret.Kick => KickStarpower,
 
-                    1 => RedStarpower,
-                    2 => YellowStarpower,
-                    3 => BlueStarpower,
-                    4 => OrangeStarpower,
-                    5 => GreenStarpower,
+                    (int) FiveLaneDrumsFret.Red => RedStarpower,
+                    (int) FiveLaneDrumsFret.Yellow => YellowStarpower,
+                    (int) FiveLaneDrumsFret.Blue => BlueStarpower,
+                    (int) FiveLaneDrumsFret.Orange => OrangeStarpower,
+                    (int) FiveLaneDrumsFret.Green => GreenStarpower,
+
+                    // Exclusive to split-dedicated kick lanes
+                    (int) FiveLaneDrumsFret.DoubleKick => DoubleKickStarpower,
 
                     _ => default
                 };
@@ -204,13 +210,15 @@ namespace YARG.Core.Game
             {
                 return index switch
                 {
-                    0 => KickActivationNote,
+                    (int) FiveLaneDrumsFret.Kick => KickActivationNote,
 
-                    1 => RedActivationNote,
-                    2 => YellowActivationNote,
-                    3 => BlueActivationNote,
-                    4 => OrangeActivationNote,
-                    5 => GreenActivationNote,
+                    (int) FiveLaneDrumsFret.Red => RedActivationNote,
+                    (int) FiveLaneDrumsFret.Yellow => YellowActivationNote,
+                    (int) FiveLaneDrumsFret.Blue => BlueActivationNote,
+                    (int) FiveLaneDrumsFret.Orange => OrangeActivationNote,
+                    (int) FiveLaneDrumsFret.Green => GreenActivationNote,
+
+                    (int) FiveLaneDrumsFret.DoubleKick => DoubleKickActivationNote,
 
                     _ => default
                 };
