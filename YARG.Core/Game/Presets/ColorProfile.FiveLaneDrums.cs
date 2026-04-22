@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.IO;
+using YARG.Core.Chart;
 using YARG.Core.Extensions;
 using YARG.Core.Utility;
 
@@ -15,6 +16,7 @@ namespace YARG.Core.Game
             Blue,
             Orange,
             Green,
+            Wildcard,
 
             // Exclusive to split-dedicated kick lanes
             DoubleKick
@@ -140,16 +142,13 @@ namespace YARG.Core.Game
             {
                 return index switch
                 {
-                    (int)FiveLaneDrumsFret.Kick => KickNote,
+                    0 => KickNote,
 
-                    (int)FiveLaneDrumsFret.Red => RedNote,
-                    (int)FiveLaneDrumsFret.Yellow => YellowNote,
-                    (int)FiveLaneDrumsFret.Blue => BlueNote,
-                    (int)FiveLaneDrumsFret.Orange => OrangeNote,
-                    (int)FiveLaneDrumsFret.Green => GreenNote,
-
-                    // Exclusive to split-dedicated kick lanes
-                    (int)FiveLaneDrumsFret.DoubleKick => DoubleKickNote,
+                    1 => RedNote,
+                    2 => YellowNote,
+                    3 => BlueNote,
+                    4 => OrangeNote,
+                    5 => GreenNote,
 
                     _ => default
                 };
@@ -174,16 +173,13 @@ namespace YARG.Core.Game
             {
                 return index switch
                 {
-                    (int)FiveLaneDrumsFret.Kick => KickStarpower,
+                    0 => KickStarpower,
 
-                    (int)FiveLaneDrumsFret.Red => RedStarpower,
-                    (int)FiveLaneDrumsFret.Yellow => YellowStarpower,
-                    (int)FiveLaneDrumsFret.Blue => BlueStarpower,
-                    (int)FiveLaneDrumsFret.Orange => OrangeStarpower,
-                    (int) FiveLaneDrumsFret.Green => GreenStarpower,
-
-                    // Exclusive to split-dedicated kick lanes
-                    (int) FiveLaneDrumsFret.DoubleKick => DoubleKickStarpower,
+                    1 => RedStarpower,
+                    2 => YellowStarpower,
+                    3 => BlueStarpower,
+                    4 => OrangeStarpower,
+                    5 => GreenStarpower,
 
                     _ => default
                 };
@@ -208,15 +204,13 @@ namespace YARG.Core.Game
             {
                 return index switch
                 {
-                    (int) FiveLaneDrumsFret.Kick => KickActivationNote,
+                    0 => KickActivationNote,
 
-                    (int)FiveLaneDrumsFret.Red => RedActivationNote,
-                    (int)FiveLaneDrumsFret.Yellow => YellowActivationNote,
-                    (int)FiveLaneDrumsFret.Blue => BlueActivationNote,
-                    (int)FiveLaneDrumsFret.Orange => OrangeActivationNote,
-                    (int) FiveLaneDrumsFret.Green => GreenActivationNote,
-
-                    (int) FiveLaneDrumsFret.DoubleKick => DoubleKickActivationNote,
+                    1 => RedActivationNote,
+                    2 => YellowActivationNote,
+                    3 => BlueActivationNote,
+                    4 => OrangeActivationNote,
+                    5 => GreenActivationNote,
 
                     _ => default
                 };

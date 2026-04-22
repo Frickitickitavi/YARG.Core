@@ -11,7 +11,7 @@ namespace YARG.Core.Engine.Drums
     {
         public delegate void OverhitEvent();
 
-        public delegate void PadHitEvent(DrumsAction action, bool noteWasHit, bool wereBonusPointsAwarded, DrumNoteType type, float velocity);
+        public delegate void PadHitEvent(DrumsAction action, bool noteWasHit, bool wereBonusPointsAwarded, bool wasOverhitInLane, DrumNoteType type, float velocity);
 
         public OverhitEvent? OnOverhit;
         public PadHitEvent?  OnPadHit;
@@ -92,6 +92,19 @@ namespace YARG.Core.Engine.Drums
             {
                 // Do not count this as an overhit if the last pad hit was part of an active lane
                 return;
+            }
+
+            // Prevent overstrum too close to the expiration of lane behavior
+            if (!IsLaneActive && CurrentTime - LaneExpireTime < LANE_END_LENIENCY)
+            {
+                YargLogger.LogFormatTrace("Overstrum prevented by lane end leniency at {0}", CurrentTime);
+                return;
+            }
+
+            // Fail coda in post-BRE coda section
+            if (CodaHasStarted)
+            {
+                Codas[CurrentCodaIndex].Overhit();
             }
 
             if (NoteIndex < Notes.Count)
@@ -359,12 +372,12 @@ namespace YARG.Core.Engine.Drums
             EngineStats.NoteScore += pointsPerNote;
         }
 
-        protected sealed override int CalculateBaseScore()
+        protected sealed override (int baseScore, int noteScore) CalculateChartScores()
         {
-            double score = 0;
+            double baseScore = 0;
+            double noteScore = 0;
             int combo = 0;
             int multiplier;
-            double weight;
             foreach (var note in Notes)
             {
                 // Exclude BRE notes from base score calculation since they can't be scored
@@ -375,28 +388,25 @@ namespace YARG.Core.Engine.Drums
 
                 // Get the current multiplier given the current combo
                 multiplier = Math.Min((combo / 10) + 1, BaseParameters.MaxMultiplier);
-
-                // invert it to calculate leniency
-                weight = 1.0 * multiplier / BaseParameters.MaxMultiplier;
-
-                score += weight * (GetPointsPerNote() * (1 + note.ChildNotes.Count));
+                double scoreForNote = GetPointsPerNote() * (1 + note.ChildNotes.Count);
+                baseScore += multiplier * scoreForNote;
+                noteScore += scoreForNote;
                 combo += 1 + note.ChildNotes.Count;
             }
 
-            YargLogger.LogDebug($"[Drums] Base score: {score}, Max Combo: {combo}");
-            return (int) Math.Round(score);
+            YargLogger.LogDebug($"[Drums] Base score: {baseScore}, Max Combo: {combo}");
+            return ((int) Math.Round(baseScore), (int) Math.Round(noteScore));
         }
 
         protected override List<CodaSection> GetCodaSections()
         {
             var codaSections = new List<CodaSection>();
-            var lanes = EngineParameters.Mode == DrumsEngineParameters.DrumMode.FiveLane ? 6 : 5;
 
             foreach (var phrase in Chart.Phrases)
             {
                 if (phrase.Type == PhraseType.BigRockEnding)
                 {
-                    codaSections.Add(new CodaSection(lanes, phrase.Time, phrase.TimeEnd, true));
+                    codaSections.Add(new CodaSection(1, phrase.Time, phrase.TimeEnd));
                 }
             }
 
@@ -454,6 +464,8 @@ namespace YARG.Core.Engine.Drums
                     DrumsAction.BlueCymbal   => (int) FourLaneDrumPad.BlueDrum,
                     DrumsAction.GreenCymbal  => (int) FourLaneDrumPad.GreenDrum,
 
+                    DrumsAction.WildcardPad => (int) FourLaneDrumPad.Wildcard,
+
                     _ => -1
                 },
                 DrumsEngineParameters.DrumMode.ProFourLane => action switch
@@ -469,6 +481,8 @@ namespace YARG.Core.Engine.Drums
                     DrumsAction.BlueCymbal   => (int) FourLaneDrumPad.BlueCymbal,
                     DrumsAction.GreenCymbal  => (int) FourLaneDrumPad.GreenCymbal,
 
+                    DrumsAction.WildcardPad => (int) FourLaneDrumPad.Wildcard,
+
                     _ => -1
                 },
                 DrumsEngineParameters.DrumMode.FiveLane => action switch
@@ -481,6 +495,8 @@ namespace YARG.Core.Engine.Drums
 
                     DrumsAction.YellowCymbal => (int) FiveLaneDrumPad.Yellow,
                     DrumsAction.OrangeCymbal => (int) FiveLaneDrumPad.Orange,
+
+                    DrumsAction.WildcardPad => (int) FiveLaneDrumPad.Wildcard,
 
                     _ => -1
                 },
@@ -501,6 +517,8 @@ namespace YARG.Core.Engine.Drums
                     (int) FourLaneDrumPad.BlueDrum   => DrumsAction.BlueDrum,
                     (int) FourLaneDrumPad.GreenDrum  => DrumsAction.GreenDrum,
 
+                    (int) FourLaneDrumPad.Wildcard => DrumsAction.WildcardPad,
+
                     _ => throw new Exception("Unreachable.")
                 },
                 DrumsEngineParameters.DrumMode.ProFourLane => pad switch
@@ -516,6 +534,8 @@ namespace YARG.Core.Engine.Drums
                     (int) FourLaneDrumPad.BlueCymbal   => DrumsAction.BlueCymbal,
                     (int) FourLaneDrumPad.GreenCymbal  => DrumsAction.GreenCymbal,
 
+                    (int) FourLaneDrumPad.Wildcard => DrumsAction.WildcardPad,
+
                     _ => throw new Exception("Unreachable.")
                 },
                 DrumsEngineParameters.DrumMode.FiveLane => pad switch
@@ -528,6 +548,8 @@ namespace YARG.Core.Engine.Drums
 
                     (int) FiveLaneDrumPad.Yellow => DrumsAction.YellowCymbal,
                     (int) FiveLaneDrumPad.Orange => DrumsAction.OrangeCymbal,
+
+                    (int) FiveLaneDrumPad.Wildcard => DrumsAction.WildcardPad,
 
                     _ => throw new Exception("Unreachable.")
                 },

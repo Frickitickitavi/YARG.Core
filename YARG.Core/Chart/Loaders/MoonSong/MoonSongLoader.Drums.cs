@@ -27,8 +27,13 @@ namespace YARG.Core.Chart
 
         private InstrumentTrack<DrumNote> LoadDrumsTrack(Instrument instrument, CreateNoteDelegate<DrumNote> createNote, InstrumentTrack<EliteDrumNote>? eliteDrumsFallback)
         {
+            CreateNoteDelegate<DrumNote> beginnerNoteDelegate = instrument is Instrument.FourLaneDrums
+                ? CreateFourLaneDrumBeginnerNote
+                : CreateFiveLaneDrumBeginnerNote;
+
             var difficulties = new Dictionary<Difficulty, InstrumentDifficulty<DrumNote>>()
             {
+                { Difficulty.Beginner, LoadDifficulty(instrument, Difficulty.Beginner, beginnerNoteDelegate, HandleTextEvent) },
                 { Difficulty.Easy, LoadDifficulty(instrument, Difficulty.Easy, createNote, HandleTextEvent) },
                 { Difficulty.Medium, LoadDifficulty(instrument, Difficulty.Medium, createNote, HandleTextEvent) },
                 { Difficulty.Hard, LoadDifficulty(instrument, Difficulty.Hard, createNote, HandleTextEvent) },
@@ -57,6 +62,7 @@ namespace YARG.Core.Chart
 
                     difficulties = new Dictionary<Difficulty, InstrumentDifficulty<DrumNote>>()
                     {
+                        { Difficulty.Beginner, LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.Easy, beginnerNoteDelegate, HandleTextEvent) },
                         { Difficulty.Easy, LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.Easy, createNote, HandleTextEvent)},
                         { Difficulty.Medium, LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.Medium, createNote, HandleTextEvent)},
                         { Difficulty.Hard, LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.Hard, createNote, HandleTextEvent)},
@@ -101,6 +107,28 @@ namespace YARG.Core.Chart
             bool isDoubleKick = pad is FiveLaneDrumPad.Kick && ((moonNote.flags & Flags.InstrumentPlus) != 0);
 
             return new DrumNote(pad, noteType, drumFlags, generalFlags, time, moonNote.tick, isDoubleKick);
+        }
+
+        private DrumNote CreateFourLaneDrumBeginnerNote(MoonNote moonNote, Dictionary<MoonPhrase.Type, MoonPhrase> currentPhrases)
+        {
+            var pad = FourLaneDrumPad.Wildcard;
+            var noteType = DrumNoteType.Neutral;
+            var generalFlags = GetGeneralFlags(moonNote, currentPhrases);
+            var drumFlags = GetDrumNoteFlags(moonNote, currentPhrases);
+
+            double time = _moonSong.TickToTime(moonNote.tick);
+            return new DrumNote(pad, noteType, drumFlags, generalFlags, time, moonNote.tick, false);
+        }
+
+        private DrumNote CreateFiveLaneDrumBeginnerNote(MoonNote moonNote, Dictionary<MoonPhrase.Type, MoonPhrase> currentPhrases)
+        {
+            var pad = FiveLaneDrumPad.Wildcard;
+            var noteType = DrumNoteType.Neutral;
+            var generalFlags = GetGeneralFlags(moonNote, currentPhrases);
+            var drumFlags = GetDrumNoteFlags(moonNote, currentPhrases);
+
+            double time = _moonSong.TickToTime(moonNote.tick);
+            return new DrumNote(pad, noteType, drumFlags, generalFlags, time, moonNote.tick, false);
         }
 
         private void HandleTextEvent(MoonText text)
@@ -414,7 +442,7 @@ namespace YARG.Core.Chart
                 const int CLINCH_THRESHOLD = 5;
                 int highestTotal = 0;
 
-                for (var noteRef = moonNote; noteRef != null && IsEventInPhrase(noteRef, lanePhrase); noteRef = noteRef.next)
+                for (var noteRef = moonNote; noteRef != null && IsEventInPhrase(noteRef, lanePhrase, inclusiveEnd: true); noteRef = noteRef.next)
                 {
                     if (noteRef.drumPad == MoonNote.DrumPad.Kick)
                     {

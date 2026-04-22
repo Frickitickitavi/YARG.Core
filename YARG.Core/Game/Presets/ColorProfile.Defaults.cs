@@ -22,6 +22,8 @@ namespace YARG.Core.Game
         public static readonly Color DefaultOrange = Color.FromArgb(0xFF, 0xFF, 0x84, 0x00); // #FF8400
         [SettingType(SettingType.Ignore)]
         public static readonly Color DefaultSilver = Color.FromArgb(0xFF, 0x20, 0x20, 0x20); // #202020
+        [SettingType(SettingType.Ignore)]
+        public static readonly Color DefaultWildcard = Color.FromArgb(0xFF, 0xA0, 0xD0, 0x10); // #A0D010 (only lightness really matters)
 
         // Values bright enough to look good on silver frets make silver notes look white like SP notes,
         // so silver gets separate fret and note colors
@@ -40,6 +42,8 @@ namespace YARG.Core.Game
 
         [SettingType(SettingType.Ignore)]
         public static readonly Color DefaultStarpower = Color.White; // #FFFFFF
+        [SettingType(SettingType.Ignore)]
+        public static readonly Color DefaultWildcardStarpower = Color.FromArgb(0xFF, 0xFF, 0x80, 0xFF);
 
         // Overly saturate colors compared to the defaults for activations
         [SettingType(SettingType.Ignore)]

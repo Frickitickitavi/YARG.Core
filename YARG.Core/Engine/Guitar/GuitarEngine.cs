@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using YARG.Core.Chart;
 using YARG.Core.Input;
 using YARG.Core.Logging;
@@ -12,9 +13,6 @@ namespace YARG.Core.Engine.Guitar
         protected const ushort SOLO_MASK = 31744;
 
         public const byte OPEN_MASK = 64;
-
-        // TODO: Make this configurable, or at least less of an arbitrary choice
-        private const double LANE_END_OVERSTRUM_LENIENCY = 0.080;
 
         public delegate void OverstrumEvent();
 
@@ -146,7 +144,7 @@ namespace YARG.Core.Engine.Guitar
             }
 
             // Prevent overstrum too close to the expiration of lane behavior
-            if (!IsLaneActive && CurrentTime - LaneExpireTime < LANE_END_OVERSTRUM_LENIENCY)
+            if (!IsLaneActive && CurrentTime - LaneExpireTime < LANE_END_LENIENCY)
             {
                 YargLogger.LogFormatTrace("Overstrum prevented by lane end leniency at {0}", CurrentTime);
             }
@@ -156,6 +154,12 @@ namespace YARG.Core.Engine.Guitar
             {
                 YargLogger.LogFormatTrace("Overstrum prevented during coda at {0}", CurrentTime);
                 return;
+            }
+
+            if (CodaHasStarted)
+            {
+                YargLogger.LogFormatTrace("Overstrum punished during post-BRE coda section at {0}", CurrentTime);
+                Codas[CurrentCodaIndex].Overhit();
             }
 
             if (IsLaneActive)
@@ -307,9 +311,10 @@ namespace YARG.Core.Engine.Guitar
                 return;
             }
 
-            // Note can't be missed during BRE phrase
-            if (IsCodaActive && note.IsBigRockEnding)
+            // BRE notes can't be missed during coda section
+            if (CodaHasStarted && note.IsBigRockEnding)
             {
+                YargLogger.LogFormatDebug("Tried to miss BRE note at {0}, converting miss to hit", CurrentTime);
                 note.SetHitState(true, true);
                 base.HitNote(note);
                 return;
@@ -414,12 +419,12 @@ namespace YARG.Core.Engine.Guitar
             StrumLeniencyTimer.SetSpeed(speed);
         }
 
-        protected sealed override int CalculateBaseScore()
+        protected sealed override (int, int) CalculateChartScores()
         {
-            double score = 0;
+            double baseScore = 0;
+            double noteScore = 0;
             int combo = 0;
             int multiplier;
-            double weight;
             foreach (var note in Notes)
             {
                 // Exclude BRE notes from base score calculation since they can't be scored
@@ -430,28 +435,35 @@ namespace YARG.Core.Engine.Guitar
 
                 // Get the current multiplier given the current combo
                 multiplier = Math.Min((combo / 10) + 1, BaseParameters.MaxMultiplier);
+                double pointsForNote = POINTS_PER_NOTE * (1 + note.ChildNotes.Count);
+                baseScore += multiplier * pointsForNote;
+                noteScore += pointsForNote;
 
-                // invert it to calculate leniency
-                weight = 1.0 * multiplier / BaseParameters.MaxMultiplier;
-
-                score += weight * (POINTS_PER_NOTE * (1 + note.ChildNotes.Count));
-                score += weight * Math.Ceiling(note.TickLength / TicksPerSustainPoint);
+                double pointsForSustain = Math.Ceiling(note.TickLength / TicksPerSustainPoint);
+                baseScore += multiplier * pointsForSustain;
+                noteScore += pointsForSustain;
                 combo++;
                 // If a note is disjoint, each sustain is counted separately.
                 if (note.IsDisjoint)
                 {
+                    HashSet<uint> seenNoteTicks = new();
                     foreach (var child in note.ChildNotes)
                     {
-                        score += Math.Ceiling(child.TickLength / TicksPerSustainPoint);
-
-                        //TODO: Check if disjoint notes should increase combo
-                        combo++;
+                        double pointsForDisjoint = Math.Ceiling(child.TickLength / TicksPerSustainPoint);
+                        baseScore += multiplier * pointsForDisjoint;
+                        noteScore += pointsForDisjoint;
+                        // Only increment combo if we haven't already seen a note in that tick
+                        if (!seenNoteTicks.Contains(child.Tick))
+                        {
+                            combo++;
+                            seenNoteTicks.Add(child.Tick);
+                        }
                     }
                 }
             }
 
-            YargLogger.LogDebug($"[Guitar] Base score: {score}, Max Combo: {combo}");
-            return (int) Math.Round(score);
+            YargLogger.LogDebug($"[Guitar] Base score: {baseScore}, Max Combo: {combo}");
+            return ((int) Math.Round(baseScore), (int) Math.Round(noteScore));
         }
 
         protected void ToggleFret(int fret, bool active)
