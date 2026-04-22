@@ -150,6 +150,8 @@ namespace YARG.Core.Game
                     (int) FiveLaneDrumsFret.Orange => OrangeNote,
                     (int) FiveLaneDrumsFret.Green => GreenNote,
 
+                    (int) FiveLaneDrumsFret.Wildcard => DefaultWildcard,
+
                     // Exclusive to split-dedicated kick lanes
                     (int) FiveLaneDrumsFret.DoubleKick => DoubleKickNote,
 
@@ -183,6 +185,8 @@ namespace YARG.Core.Game
                     (int) FiveLaneDrumsFret.Blue => BlueStarpower,
                     (int) FiveLaneDrumsFret.Orange => OrangeStarpower,
                     (int) FiveLaneDrumsFret.Green => GreenStarpower,
+
+                    (int) FiveLaneDrumsFret.Wildcard => DefaultWildcardStarpower,
 
                     // Exclusive to split-dedicated kick lanes
                     (int) FiveLaneDrumsFret.DoubleKick => DoubleKickStarpower,
@@ -219,6 +223,8 @@ namespace YARG.Core.Game
                     (int) FiveLaneDrumsFret.Green => GreenActivationNote,
 
                     (int) FiveLaneDrumsFret.DoubleKick => DoubleKickActivationNote,
+
+                    (int) FiveLaneDrumsFret.Wildcard => DefaultWildcard,
 
                     _ => default
                 };
