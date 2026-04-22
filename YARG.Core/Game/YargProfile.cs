@@ -12,7 +12,9 @@ namespace YARG.Core.Game
 {
     public partial class YargProfile
     {
-        private const int PROFILE_VERSION = 8;
+        private readonly int PROFILE_VERSION = 8;
+
+        public int Version;
 
         public Guid Id;
         public string Name;
@@ -151,7 +153,7 @@ namespace YARG.Core.Game
 
         public YargProfile(ref FixedArrayStream stream)
         {
-            int version = stream.Read<int>(Endianness.Little);
+            Version = stream.Read<int>(Endianness.Little);
 
             Name = stream.ReadString();
 
@@ -161,7 +163,7 @@ namespace YARG.Core.Game
             ColorProfile = stream.ReadGuid();
             CameraPreset = stream.ReadGuid();
 
-            if (version >= 2)
+            if (Version >= 2)
             {
                 HighwayPreset = stream.ReadGuid();
             }
@@ -176,19 +178,19 @@ namespace YARG.Core.Game
             HighwayLength = stream.Read<float>(Endianness.Little);
             LeftyFlip = stream.ReadBoolean();
 
-            if (version >= 3)
+            if (Version >= 3)
             {
                 RangeEnabled = stream.ReadBoolean();
             }
 
-            if (version >= 4)
+            if (Version >= 4)
             {
                 UseCymbalModels = stream.ReadBoolean();
                 var splitProTomsAndCymbals = stream.ReadBoolean();
                 var swapSnareAndHiHat = stream.ReadBoolean();
                 var swapCrashAndRide = stream.ReadBoolean();
 
-                if (version < 8) // Interpret the old split-all and single-swap settings into highway orderings
+                if (Version < 8) // Interpret the old split-all and single-swap settings into highway orderings
                 {
                     FourLaneDrumsHighwayOrderingLength = 4;
                     FourLaneDrumsHighwayOrdering = DEFAULT_FOUR_LANE_ORDERING;
@@ -225,7 +227,7 @@ namespace YARG.Core.Game
                 FiveLaneDrumsHighwayOrdering = DEFAULT_FIVE_LANE_ORDERING;
             }
 
-            if (version >= 5)
+            if (Version >= 5)
             {
                 StarPowerActivationType = (StarPowerActivationType) stream.ReadByte();
             }
@@ -234,7 +236,7 @@ namespace YARG.Core.Game
                 StarPowerActivationType = StarPowerActivationType.RightmostNote;
             }
 
-            if (version >= 6)
+            if (Version >= 6)
             {
                 GameMode = (GameMode) stream.ReadByte();
             }
@@ -243,7 +245,7 @@ namespace YARG.Core.Game
                 GameMode = CurrentInstrument.ToNativeGameMode();
             }
 
-            if (version >= 7)
+            if (Version >= 7)
             {
                 OpenLaneDisplayType = (OpenLaneDisplayType) stream.ReadByte();
             }
@@ -252,7 +254,7 @@ namespace YARG.Core.Game
                 OpenLaneDisplayType = OpenLaneDisplayType.Never;
             }
 
-            if (version >= 8)
+            if (Version >= 8)
             {
                 FourLaneDrumsHighwayOrderingLength = stream.ReadByte();
                 FourLaneDrumsHighwayOrdering = new DrumsHighwayItem[FourLaneDrumsHighwayOrderingLength];

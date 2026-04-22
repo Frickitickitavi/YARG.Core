@@ -1,42 +1,46 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace YARG.Core.Game
 {
     public partial class YargProfile
     {
         [Obsolete("Superseded by highway reordering.")]
-        public bool? SplitProTomsAndCymbals;
+        public bool SplitProTomsAndCymbals;
 
         [Obsolete("Superseded by highway reordering.")]
-        public bool? SwapSnareAndHiHat;
+        public bool SwapSnareAndHiHat;
 
         [Obsolete("Superseded by highway reordering.")]
-        public bool? SwapCrashAndRide;
+        public bool SwapCrashAndRide;
 
 
 #pragma warning disable 612, 618 // Ignore obsolete warnings since this is the place where we grandfather them in
         public void GrandfatherIn()
         {
             UpgradeDrumCustomization();
+
+            // Always do this last
+            Version = PROFILE_VERSION;
         }
 
         private void UpgradeDrumCustomization()
         {
-            if (SplitProTomsAndCymbals is not null && SplitProTomsAndCymbals.Value)
+            if (Version < 8 && SplitProTomsAndCymbals)
             {
                 ProDrumsHighwayOrdering = new DrumsHighwayItem[]
                     {
-                        SwapSnareAndHiHat.Value ?  DrumsHighwayItem.YellowCymbal : DrumsHighwayItem.Red,
-                        SwapSnareAndHiHat.Value ?  DrumsHighwayItem.Red : DrumsHighwayItem.YellowCymbal,
+                        SwapSnareAndHiHat ?  DrumsHighwayItem.YellowCymbal : DrumsHighwayItem.Red,
+                        SwapSnareAndHiHat ?  DrumsHighwayItem.Red : DrumsHighwayItem.YellowCymbal,
                         DrumsHighwayItem.YellowDrum,
-                        SwapCrashAndRide.Value ? DrumsHighwayItem.GreenCymbal : DrumsHighwayItem.BlueCymbal,
+                        SwapCrashAndRide ? DrumsHighwayItem.GreenCymbal : DrumsHighwayItem.BlueCymbal,
                         DrumsHighwayItem.BlueDrum,
-                        SwapCrashAndRide.Value ? DrumsHighwayItem.BlueCymbal : DrumsHighwayItem.GreenCymbal,
+                        SwapCrashAndRide ? DrumsHighwayItem.BlueCymbal : DrumsHighwayItem.GreenCymbal,
                         DrumsHighwayItem.GreenDrum,
                     };
             }
 
-            if (SwapSnareAndHiHat is not null && SwapSnareAndHiHat.Value)
+            if (Version < 8 && SwapSnareAndHiHat)
             {
                 FiveLaneDrumsHighwayOrdering = new DrumsHighwayItem[]
                     {
@@ -48,9 +52,9 @@ namespace YARG.Core.Game
                     };
             }
 
-            SplitProTomsAndCymbals = null;
-            SwapSnareAndHiHat = null;
-            SwapCrashAndRide = null;
+            SplitProTomsAndCymbals = false;
+            SwapSnareAndHiHat = false;
+            SwapCrashAndRide = false;
         }
 #pragma warning restore 612, 618
     }
