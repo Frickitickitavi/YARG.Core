@@ -34,7 +34,7 @@ namespace YARG.Core.Song.Cache
         /// Format is YY_MM_DD_RR: Y = year, M = month, D = day, R = revision (reset across dates, only increment
         /// if multiple cache version changes happen in a single day).
         /// </summary>
-        private const int CACHE_VERSION = 26_04_17_00;
+        private const int CACHE_VERSION = 26_04_28_00;
 
         public static ScanProgressTracker Progress => _progress;
         private static ScanProgressTracker _progress;
@@ -330,9 +330,13 @@ namespace YARG.Core.Song.Cache
                             try
                             {
                                 using var stream = new FileStream(moggPath, FileMode.Open, FileAccess.Read, FileShare.Read, 1);
-                                if (stream.Read<int>(Endianness.Little) != RBCONEntry.UNENCRYPTED_MOGG)
+                                var moggResult = RBCONEntry.ValidateMoggHeader(stream);
+                                if (moggResult != ScanResult.Success)
                                 {
-                                    AddToBadSongs(group.Root.FullName + " - " + node.Key, ScanResult.MoggError_Update);
+                                    AddToBadSongs(group.Root.FullName + " - " + node.Key,
+                                        moggResult == ScanResult.UnsupportedEncryption
+                                            ? moggResult
+                                            : ScanResult.MoggError_Update);
                                     return;
                                 }
                             }
