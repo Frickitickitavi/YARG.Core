@@ -26,18 +26,18 @@ namespace YARG.Core.Chart
         public override int LaneNote => Pad;
 
         public DrumNote(FourLaneDrumPad pad, DrumNoteType noteType, DrumNoteFlags drumFlags,
-            NoteFlags flags, double time, uint tick, bool isDoubleKick)
+            NoteFlags flags, double time, uint tick, bool isDoubleKick = false)
             : this((int)pad, noteType, drumFlags, flags, time, tick, isDoubleKick)
         {
         }
 
         public DrumNote(FiveLaneDrumPad pad, DrumNoteType noteType, DrumNoteFlags drumFlags,
-            NoteFlags flags, double time, uint tick, bool isDoubleKick)
+            NoteFlags flags, double time, uint tick, bool isDoubleKick = false)
             : this((int)pad, noteType, drumFlags, flags, time, tick, isDoubleKick)
         {
         }
 
-        public DrumNote(int pad, DrumNoteType noteType, DrumNoteFlags drumFlags, NoteFlags flags, double time, uint tick, bool isDoubleKick)
+        public DrumNote(int pad, DrumNoteType noteType, DrumNoteFlags drumFlags, NoteFlags flags, double time, uint tick, bool isDoubleKick = false)
             : base(flags, time, 0, tick, 0)
         {
             Pad = pad;
