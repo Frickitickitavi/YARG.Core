@@ -16,7 +16,7 @@ namespace YARG.Core.Game
             Blue,
             Orange,
             Green,
-            Wildcard,
+            Wildcard = 9,
 
             // Exclusive to split-dedicated kick lanes
             DoubleKick
