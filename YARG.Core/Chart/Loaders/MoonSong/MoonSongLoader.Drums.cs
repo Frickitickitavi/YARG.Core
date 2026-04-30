@@ -14,6 +14,9 @@ namespace YARG.Core.Chart
         private uint _lastLanePhraseTick;
         private List<int>? _validLaneNotes = null;
 
+        // Used to wipe lane markers from Beginner
+        private const NoteFlags NO_LANE_FLAGS = ~(NoteFlags.LaneStart | NoteFlags.LaneEnd | NoteFlags.Tremolo | NoteFlags.Trill);
+
         public InstrumentTrack<DrumNote> LoadDrumsTrack(Instrument instrument, InstrumentTrack<EliteDrumNote>? eliteDrumsFallback)
         {
             _discoFlip = false;
@@ -113,7 +116,8 @@ namespace YARG.Core.Chart
         {
             const FourLaneDrumPad pad = FourLaneDrumPad.Wildcard;
             const DrumNoteType noteType = DrumNoteType.Neutral;
-            var generalFlags = GetGeneralFlags(moonNote, currentPhrases);
+
+            var generalFlags = GetGeneralFlags(moonNote, currentPhrases) & NO_LANE_FLAGS;
             var drumFlags = GetDrumNoteFlags(moonNote, currentPhrases);
 
             double time = _moonSong.TickToTime(moonNote.tick);
@@ -124,7 +128,7 @@ namespace YARG.Core.Chart
         {
             const FiveLaneDrumPad pad = FiveLaneDrumPad.Wildcard;
             const DrumNoteType noteType = DrumNoteType.Neutral;
-            var generalFlags = GetGeneralFlags(moonNote, currentPhrases);
+            var generalFlags = GetGeneralFlags(moonNote, currentPhrases) & NO_LANE_FLAGS;
             var drumFlags = GetDrumNoteFlags(moonNote, currentPhrases);
 
             double time = _moonSong.TickToTime(moonNote.tick);
