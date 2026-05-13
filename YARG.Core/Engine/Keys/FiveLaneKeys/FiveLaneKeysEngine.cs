@@ -286,5 +286,10 @@ namespace YARG.Core.Engine.Keys
                 _ => throw new Exception("Unhandled")
             };
         }
+
+        protected override bool ActiveLaneIncludesNote(int inputNote)
+        {
+            return RequiredLaneNote is (int)FiveFretGuitarFret.Wildcard || base.ActiveLaneIncludesNote(inputNote);
+        }
     }
 }

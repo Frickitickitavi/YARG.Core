@@ -771,9 +771,25 @@ namespace MoonscraperChartEditor.Song.IO
                     }
 
                     ProcessNoteOnEventAsSpecialPhrase(ref processParams, phraseType, MoonSong.Difficulty.Expert);
-                    if ((int)noteEvent.Velocity is >= 41 and <= 50)
-                    {
-                        ProcessNoteOnEventAsSpecialPhrase(ref processParams, phraseType, MoonSong.Difficulty.Hard);
+
+                    // If the lane velocity is in the range [41,50], the lane applies to XH
+                    // That's all RB supports, but CH extended the system downward, so that:
+                    //   *[31,40] applies to XHM
+                    //   *[21,30] applies to XHME
+                    // For any other velocity, the lane is X-only
+                    if ((int)noteEvent.Velocity >= 21) {
+                        if ((int) noteEvent.Velocity <= 50)
+                        {
+                            ProcessNoteOnEventAsSpecialPhrase(ref processParams, phraseType, MoonSong.Difficulty.Hard);
+                        }
+                        if ((int) noteEvent.Velocity <= 40)
+                        {
+                            ProcessNoteOnEventAsSpecialPhrase(ref processParams, phraseType, MoonSong.Difficulty.Medium);
+                        }
+                        if ((int) noteEvent.Velocity <= 30)
+                        {
+                            ProcessNoteOnEventAsSpecialPhrase(ref processParams, phraseType, MoonSong.Difficulty.Easy);
+                        }
                     }
                 }
 

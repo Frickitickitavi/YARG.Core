@@ -413,6 +413,13 @@ namespace YARG.Core.Engine.Drums
             return codaSections;
         }
 
+        protected override bool ActiveLaneIncludesNote(int padHit)
+        {
+            // FiveLaneDrumPad.Wildcard has the same value as for 4L. We should technically check the one that corresponds to the current
+            // mode, but I'm keeping this minimal since it's engine code
+            return RequiredLaneNote is (int) FourLaneDrumPad.Wildcard || base.ActiveLaneIncludesNote(padHit);
+        }
+
         protected static bool IsTomInput(GameInput input)
         {
             return input.GetAction<DrumsAction>() switch

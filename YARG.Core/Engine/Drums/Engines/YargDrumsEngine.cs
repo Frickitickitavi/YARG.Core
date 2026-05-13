@@ -183,7 +183,7 @@ namespace YARG.Core.Engine.Drums.Engines
             // If no note was hit but the user hit a pad, then over hit
             if (PadHit != null)
             {
-                OnPadHit?.Invoke(Action!.Value, false, false, ActiveLaneIncludesNote((int) PadHit), DrumNoteType.Neutral, HitVelocity.GetValueOrDefault(0));
+                OnPadHit?.Invoke(Action!.Value, false, false, ActiveLaneIncludesNote((int)PadHit), DrumNoteType.Neutral, HitVelocity.GetValueOrDefault(0));
                 Overhit();
                 ResetPadState();
             }
@@ -192,7 +192,7 @@ namespace YARG.Core.Engine.Drums.Engines
         protected override bool CanNoteBeHit(DrumNote note)
         {
             return note.Pad == PadHit || (PadHit != null && note.Pad == (int) FourLaneDrumPad.Wildcard);
-    }
+        }
 
         protected override void UpdateBot(double time)
         {

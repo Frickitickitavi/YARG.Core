@@ -54,6 +54,13 @@ namespace YARG.Core.Chart
             var generalFlags = GetGeneralFlags(moonNote, currentPhrases);
             var guitarFlags = GuitarNoteFlags.None;
 
+            // Turn trills into tremolos, since they'll be entirely wildcards instead of two different notes
+            if ((generalFlags & NoteFlags.Trill) != 0)
+            {
+                generalFlags &= ~NoteFlags.Trill;
+                generalFlags |= NoteFlags.Tremolo;
+            }
+
             double time = _moonSong.TickToTime(moonNote.tick);
             return new GuitarNote(fret, noteType, guitarFlags, generalFlags, time, GetLengthInTime(moonNote), moonNote.tick, moonNote.length);
         }
@@ -65,6 +72,13 @@ namespace YARG.Core.Chart
             var noteType = GetGuitarNoteType(moonNote);
             var generalFlags = GetGeneralFlags(moonNote, currentPhrases);
             var guitarFlags = GetGuitarNoteFlags(moonNote);
+
+            // Turn trills into tremolos, since they'll be entirely wildcards instead of two different notes
+            if ((generalFlags & NoteFlags.Trill) != 0)
+            {
+                generalFlags &= ~NoteFlags.Trill;
+                generalFlags |= NoteFlags.Tremolo;
+            }
 
             double time = _moonSong.TickToTime(moonNote.tick);
             return new GuitarNote(fret, noteType, guitarFlags, generalFlags, time, GetLengthInTime(moonNote), moonNote.tick, moonNote.length);

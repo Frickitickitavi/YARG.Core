@@ -12,6 +12,8 @@ namespace YARG.Core.Engine.Guitar
         // Mask of all the solo buttons in bit math
         protected const ushort SOLO_MASK = 31744;
 
+        private const ushort WILDCARD_MASK = (1 << (ushort)FiveFretGuitarFret.Wildcard) >> 1;
+
         public const byte OPEN_MASK = 64;
 
         public delegate void OverstrumEvent();
@@ -389,6 +391,11 @@ namespace YARG.Core.Engine.Guitar
             if (!IsLaneActive)
             {
                 return false;
+            }
+
+            if (RequiredLaneNote is WILDCARD_MASK)
+            {
+                return true;
             }
 
             if (MaskIsMultiFret(RequiredLaneNote)) // Active lane is chord tremolo
