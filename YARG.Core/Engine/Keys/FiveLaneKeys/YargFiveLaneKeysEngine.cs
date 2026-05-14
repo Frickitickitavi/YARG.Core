@@ -12,6 +12,8 @@ namespace YARG.Core.Engine.Keys.Engines
     {
         private KeyPressedTimes[] _keyPressedTimes = new KeyPressedTimes[7];
 
+        private const int WILDCARD_MASK = 1 << (int) FiveLaneKeysAction.Wildcard;
+
         public YargFiveLaneKeysEngine(InstrumentDifficulty<GuitarNote> chart, SyncTrack syncTrack,
             KeysEngineParameters engineParameters, bool isBot) : base(chart, syncTrack, engineParameters, isBot)
         {
@@ -402,6 +404,12 @@ namespace YARG.Core.Engine.Keys.Engines
                 return false;
             }
 
+            if (RequiredLaneNote is WILDCARD_MASK)
+            {
+                mask = WILDCARD_MASK;
+                return true;
+            }
+
             // Mask has green = 1, 5LK actions are green = 0
             var fretMask = 1 << (fiveLaneKeyIndex);
 
@@ -440,6 +448,11 @@ namespace YARG.Core.Engine.Keys.Engines
             if (!IsLaneActive)
             {
                 return false;
+            }
+
+            if (RequiredLaneNote is WILDCARD_MASK)
+            {
+                return true;
             }
 
             // Mask has green = 1, 5LK actions are green = 0
