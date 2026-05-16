@@ -55,8 +55,6 @@ namespace YARG.Core.Engine
         public override BaseEngineParameters BaseParameters => EngineParameters;
         public override BaseStats            BaseStats      => EngineStats;
 
-        protected const double LANE_PROXIMITY_LENIENCY = 0.080;
-
         protected BaseEngine(InstrumentDifficulty<TNoteType> chart, SyncTrack syncTrack,
             TEngineParams engineParameters, bool isChordSeparate, bool isBot)
             : base(syncTrack, isChordSeparate, isBot)
@@ -679,8 +677,8 @@ namespace YARG.Core.Engine
 
         protected void UpdateLaneAutohitExpireTime()
         {
-            LaneAutohitExpireTime = CurrentTime + EngineParameters.HitWindow.TremoloWindow;
-            YargLogger.LogFormatDebug("LaneExpireTime extended to {0}. TremoloWindow {1}. Increment {2}.", LaneAutohitExpireTime, EngineParameters.HitWindow.TremoloWindow, LaneAutohitExpireTime - CurrentTime);
+            LaneAutohitExpireTime = CurrentTime + EngineParameters.HitWindow.LaneAutohitWindow;
+            YargLogger.LogFormatDebug("LaneExpireTime extended to {0}. LaneAutohitWindow {1}. Increment {2}.", LaneAutohitExpireTime, EngineParameters.HitWindow.LaneAutohitWindow, LaneAutohitExpireTime - CurrentTime);
         }
 
         protected bool SkipPreviousNotes(TNoteType current)

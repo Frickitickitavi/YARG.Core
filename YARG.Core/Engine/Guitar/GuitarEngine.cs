@@ -161,7 +161,7 @@ namespace YARG.Core.Engine.Guitar
             if (
                 !IsLaneActive && // Not in a lane
                 Notes[NoteIndex].IsLaneStart && // The next note is a lane start
-                Notes[NoteIndex].Time - CurrentTime < LANE_PROXIMITY_LENIENCY // That lane is starting soon
+                Notes[NoteIndex].Time - CurrentTime < EngineParameters.HitWindow.LaneProximityProtectionWindow // That lane is starting soon
             )
             {
                 YargLogger.LogFormatTrace("Overhit prevented by lane start leniency at {0}", CurrentTime);
@@ -174,7 +174,7 @@ namespace YARG.Core.Engine.Guitar
                 !IsLaneActive && // Not in a lane
                 NoteIndex > 0 && // A previous note exists
                 Notes[NoteIndex - 1].IsLaneEnd && // The previous note was a lane end
-                CurrentTime - Notes[NoteIndex - 1].Time < LANE_PROXIMITY_LENIENCY // The lane ended recently
+                CurrentTime - Notes[NoteIndex - 1].Time < EngineParameters.HitWindow.LaneProximityProtectionWindow // The lane ended recently
             )
             {
                 YargLogger.LogFormatTrace("Overhit prevented by lane end leniency at {0}", CurrentTime);
