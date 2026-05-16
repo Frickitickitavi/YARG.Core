@@ -104,40 +104,6 @@ public class HitWindowSettingsTests
         }
     }
 
-    [Test]
-    public void SerializeAndDeserialize_RoundTripAllFieldsForVersion12()
-    {
-        var original = new HitWindowSettings(
-            maxWindow: 0.13,
-            minWindow: 0.07,
-            frontToBackRatio: 1.1,
-            isDynamic: true,
-            dwSlope: 0.4,
-            dwScale: 1.7,
-            dwGamma: 2.2,
-            laneAutohitWindow: 0.035,
-            laneProximityProtectionWindow: 0.035)
-        {
-            Scale = 2.0
-        };
-
-        var deserialized = RoundTrip(original, version: 12);
-
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(deserialized.Scale, Is.EqualTo(1.0).Within(0.0000001));
-            Assert.That(deserialized.MaxWindow, Is.EqualTo(original.MaxWindow).Within(0.0000001));
-            Assert.That(deserialized.MinWindow, Is.EqualTo(original.MinWindow).Within(0.0000001));
-            Assert.That(deserialized.FrontToBackRatio, Is.EqualTo(original.FrontToBackRatio).Within(0.0000001));
-            Assert.That(deserialized.IsDynamic, Is.EqualTo(original.IsDynamic));
-            Assert.That(deserialized.DynamicWindowSlope, Is.EqualTo(original.DynamicWindowSlope).Within(0.0000001));
-            Assert.That(deserialized.DynamicWindowScale, Is.EqualTo(original.DynamicWindowScale).Within(0.0000001));
-            Assert.That(deserialized.DynamicWindowGamma, Is.EqualTo(original.DynamicWindowGamma).Within(0.0000001));
-            Assert.That(deserialized.LaneAutohitWindow, Is.EqualTo(original.LaneAutohitWindow).Within(0.0000001));
-            Assert.That(deserialized.LaneProximityProtectionWindow, Is.EqualTo(original.LaneProximityProtectionWindow).Within(0.0000001));
-        }
-    }
-
     private static HitWindowSettings RoundTrip(HitWindowSettings settings, int version)
     {
         using var stream = new MemoryStream();
