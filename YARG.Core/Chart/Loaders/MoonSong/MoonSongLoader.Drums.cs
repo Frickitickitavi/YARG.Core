@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using MoonscraperChartEditor.Song;
+﻿using MoonscraperChartEditor.Song;
 using MoonscraperChartEditor.Song.IO;
+using System;
+using System.Collections.Generic;
 using YARG.Core.Parsing;
 using static MoonscraperChartEditor.Song.MoonNote;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace YARG.Core.Chart
 {
@@ -158,6 +159,15 @@ namespace YARG.Core.Chart
             if ((generalFlags & NoteFlags.Trill) != 0)
             {
                 generalFlags &= ~NoteFlags.Trill;
+                generalFlags |= NoteFlags.Tremolo;
+            }
+
+
+
+            // Turn kick lanes into tremolos, since they'll be wildcard lanes
+            if ((drumFlags & DrumNoteFlags.KickLane) != 0)
+            {
+                drumFlags &= ~DrumNoteFlags.KickLane;
                 generalFlags |= NoteFlags.Tremolo;
             }
 
@@ -432,9 +442,54 @@ namespace YARG.Core.Chart
 
         private DrumNoteFlags GetDrumNoteFlags(MoonNote moonNote, Dictionary<MoonPhrase.Type, MoonPhrase> currentPhrases)
         {
-            // Can be populated later if additional note flags are added
+            var flags = DrumNoteFlags.None;
+
+            // Kick lane
+            if (currentPhrases.TryGetValue(MoonPhrase.Type.KickLane, out var kickLane) && IsEventInPhrase(moonNote, kickLane, inclusiveEnd: true) && moonNote.drumPad is DrumPad.Kick)
+            {
+                MoonNote? previousKickInLane = null;
+                var noteToCheck = moonNote.previous;
+                while (noteToCheck is not null && IsEventInPhrase(noteToCheck, kickLane, inclusiveEnd: true))
+                {
+                    if (noteToCheck.drumPad is DrumPad.Kick)
+                    {
+                        previousKickInLane = noteToCheck;
+                        break;
+                    }
+                    noteToCheck = noteToCheck.previous;
+                }
+
+                noteToCheck = moonNote.next;
+                MoonNote? nextKickInLane = null;
+                while (noteToCheck is not null)
+                {
+                    if (noteToCheck.drumPad is DrumPad.Kick)
+                    {
+                        nextKickInLane = noteToCheck;
+                        break;
+                    }
+                    noteToCheck = noteToCheck.next;
+                }
+
+                // Reject single-note kick lanes
+                if (previousKickInLane is not null || nextKickInLane is not null)
+                {
+                    flags |= DrumNoteFlags.KickLane;
+
+                    if (previousKickInLane is null)
+                    {
+                        flags |= DrumNoteFlags.KickLaneStart;
+                    }
+
+                    if (nextKickInLane is null)
+                    {
+                        flags |= DrumNoteFlags.KickLaneEnd;
+                    }
+                }
+            }
+
             // Activation note marking is done within DrumsPlayer
-            return DrumNoteFlags.None;
+            return flags;
         }
 
         private InstrumentDifficulty<DrumNote> LoadFromEliteDrumsDownchartDifficulty(Instrument instrument,

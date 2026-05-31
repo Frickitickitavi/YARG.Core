@@ -28,6 +28,19 @@ namespace YARG.Core.Engine.Drums
 
         protected bool IsMidiDrumsInput;
 
+        private uint TotalKickLanes;
+        private uint TotalHandLanes;
+
+        protected double KickLaneAutohitExpireTime;
+
+        public override bool LanesExist => HandLanesExist || KickLanesExist;
+        public bool HandLanesExist => CurrentHandLaneIndex <= TotalHandLanes;
+        public bool KickLanesExist => CurrentKickLaneIndex <= TotalKickLanes;
+
+        private uint CurrentHandLaneIndex => CurrentLaneIndex; // alias to distinguish from kick lanes
+        private uint CurrentKickLaneIndex;
+        private bool KickLaneIsActive;        
+
         protected DrumsEngine(InstrumentDifficulty<DrumNote> chart, SyncTrack syncTrack,
             DrumsEngineParameters engineParameters, bool isBot, bool isMidiDrumsInput)
             : base(chart, syncTrack, engineParameters, true, isBot)
@@ -88,9 +101,9 @@ namespace YARG.Core.Engine.Drums
                 return;
             }
 
-            if (PadHit != null && ActiveLaneIncludesNote((int) PadHit))
+            if (PadHit != null && ActiveLaneIncludesNote(PadHit.Value))
             {
-                // Do not count this as an overhit if the last pad hit was part of an active lane
+                // Do not count this as an overhit if the pad hit was part of an active lane
                 return;
             }
 
@@ -182,6 +195,20 @@ namespace YARG.Core.Engine.Drums
             if (!activationAutoHit && note.IsStarPowerActivator && CanStarPowerActivate && IsActivationComplete(note))
             {
                 ActivateStarPower();
+            }
+
+            if (note.IsKickLane)
+            {
+                UpdateKickLaneAutohitExpireTime();
+
+                if (note.IsKickLaneStart)
+                {
+                    KickLaneIsActive = true;
+                }
+                if (note.IsKickLaneEnd)
+                {
+                    KickLaneIsActive = false;
+                }
             }
 
             IncrementCombo();
@@ -350,6 +377,16 @@ namespace YARG.Core.Engine.Drums
                 StartSolo();
             }
 
+            if (note.IsKickLaneStart)
+            {
+                KickLaneIsActive = true;
+            }
+
+            if (note.IsKickLaneEnd)
+            {
+                KickLaneIsActive = false;
+            }
+
             ResetCombo();
 
             UpdateMultiplier();
@@ -417,7 +454,9 @@ namespace YARG.Core.Engine.Drums
         {
             // FiveLaneDrumPad.Wildcard has the same value as for 4L. We should technically check the one that corresponds to the current
             // mode, but I'm keeping this minimal since it's engine code
-            return RequiredLaneNote is (int) FourLaneDrumPad.Wildcard || base.ActiveLaneIncludesNote(padHit);
+            return RequiredLaneNote is (int) FourLaneDrumPad.Wildcard ||
+                base.ActiveLaneIncludesNote(padHit) ||
+                (padHit == (int)FourLaneDrumPad.Kick && KickLaneIsActive); // Ditto for kick
         }
 
         protected static bool IsTomInput(GameInput input)
@@ -566,10 +605,136 @@ namespace YARG.Core.Engine.Drums
 
         protected override bool CanSustainHold(DrumNote note) => throw new InvalidOperationException();
 
+        protected override bool IsInLaneLeniencyWindow(int inputNote)
+        {
+            // Kick lane special case
+            if (inputNote is (int) FourLaneDrumPad.Kick)
+            {
+                return IsInKickLaneLeniencyWindow();
+
+            }
+
+            return base.IsInLaneLeniencyWindow(inputNote);
+        }
+
+        private bool IsInKickLaneLeniencyWindow()
+        {
+            // We want to see if a kick lane is within the proximity protection window.
+            // A non-lane kick between now and the lane cuts off the window, but non-kick
+            // notes (laned or otherwise) do not
+
+            var lookAhead = NoteIndex;
+            var foundNonLaneKickAhead = false;
+
+            while (
+                Notes[lookAhead] is not null && // There is a next note to look at
+                Notes[lookAhead].Time - CurrentTime < EngineParameters.HitWindow.LaneProximityProtectionWindow && // That note is still within the protection window
+                !foundNonLaneKickAhead // We haven't been cut off by a non-lane kick yet
+            )
+            {
+                foreach (var child in Notes[lookAhead].AllNotes)
+                {
+                    if (child.Pad is (int)FourLaneDrumPad.Kick)
+                    {
+                        if (child.IsKickLaneStart)
+                        {
+                            return true; // The first kick we found starts a kick lane, so we're protected
+                        }
+
+                        // The first kick we found does not start a kick lane, so we're not protected
+                        // We still need to check backwards for a kick lane end, so don't return yet
+                        // Use this variable to break out of the while, since we're in a nested for loop
+                        foundNonLaneKickAhead = true;
+                        break;
+                    }
+                }
+                lookAhead++;
+            }
+
+            var lookBehind = NoteIndex;
+
+            while (
+                Notes[lookBehind] is not null && // There is a previous note to look at
+                Notes[lookBehind].Time - CurrentTime < EngineParameters.HitWindow.LaneProximityProtectionWindow // That note is still within the protection window
+            )
+            {
+                foreach (var child in Notes[lookBehind].AllNotes)
+                {
+                    if (child.Pad is (int) FourLaneDrumPad.Kick)
+                    {
+                        // This is the first kick we've found working backwards
+                        // If it was the end of a kick lane, we're protected. Otherwise, we're not
+                        return child.IsKickLaneEnd;
+                    }
+                }
+                lookBehind--;
+            }
+
+            // At this point, we made it out of the protection window in both directions without
+            // finding any kicks, so there's no protection
+            return false;
+        }
+
         protected override bool ProximalLaneForgivesInput(int inputNote, DrumNote laneNote)
         {
             var (requiredLaneNote, otherNoteInTrill) = GetLaneNotes(laneNote);
             return inputNote == requiredLaneNote || (otherNoteInTrill != -1 && otherNoteInTrill == inputNote);
+        }
+
+        protected void UpdateKickLaneAutohitExpireTime()
+        {
+            KickLaneAutohitExpireTime = CurrentTime + EngineParameters.HitWindow.LaneAutohitWindow;
+            YargLogger.LogFormatDebug("KickLaneExpireTime extended to {0}. LaneAutohitWindow {1}. Increment {2}.", LaneAutohitExpireTime, EngineParameters.HitWindow.LaneAutohitWindow, KickLaneAutohitExpireTime - CurrentTime);
+        }
+
+        protected override void GetTotalLanes()
+        {
+            TotalHandLanes = 0;
+            TotalKickLanes = 0;
+
+            if (Notes.Count == 0)
+            {
+                return;
+            }
+
+            // Modify lane start and end points if selected practice sections cut off the charted boundaries
+            if (Notes[0].IsLane)
+            {
+                Notes[0].ActivateFlag(NoteFlags.LaneStart);
+            }
+
+            if (Notes[^1].IsLane)
+            {
+                Notes[^1].ActivateFlag(NoteFlags.LaneEnd);
+            }
+
+            for (int i = 0; i < Chart.Phrases.Count; i++)
+            {
+                var thisPhrase = Chart.Phrases[i];
+
+                if (thisPhrase.TickEnd < Notes[0].Tick)
+                {
+                    continue;
+                }
+
+                if (thisPhrase.Tick > Notes[^1].TickEnd)
+                {
+                    break;
+                }
+
+                switch (thisPhrase.Type)
+                {
+                    case PhraseType.TremoloLane
+                    or   PhraseType.TrillLane:
+                        TotalHandLanes++;
+                        break;
+                    case PhraseType.KickLane:
+                        TotalKickLanes++;
+                        break;
+                }
+            }
+
+            TotalLanes = TotalHandLanes + TotalKickLanes;
         }
     }
 }

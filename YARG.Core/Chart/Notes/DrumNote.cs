@@ -19,6 +19,10 @@ namespace YARG.Core.Chart
         public bool IsAccent  => Type == DrumNoteType.Accent;
         public bool IsGhost   => Type == DrumNoteType.Ghost;
 
+        public bool IsKickLane => (DrumFlags & DrumNoteFlags.KickLane) != 0;
+        public bool IsKickLaneStart => (DrumFlags & DrumNoteFlags.KickLaneStart) != 0;
+        public bool IsKickLaneEnd => (DrumFlags & DrumNoteFlags.KickLaneEnd) != 0;
+
         public float? HitVelocity;
 
         public bool IsStarPowerActivator => (DrumFlags & DrumNoteFlags.StarPowerActivator) != 0;
@@ -138,5 +142,9 @@ namespace YARG.Core.Chart
         None = 0,
 
         StarPowerActivator = 1 << 0,
+
+        KickLane = 1 << 1,
+        KickLaneStart = 1 << 2,
+        KickLaneEnd = 1 << 3,
     }
 }

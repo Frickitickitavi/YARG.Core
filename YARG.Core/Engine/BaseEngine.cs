@@ -145,7 +145,7 @@ namespace YARG.Core.Engine
 
         protected double LaneAutohitExpireTime;
         public bool IsLaneActive => RequiredLaneNote != -1;
-        public bool LanesExist => CurrentLaneIndex <= TotalLanes;
+        public virtual bool LanesExist => CurrentLaneIndex <= TotalLanes;
 
         /// <summary>
         /// Whether or not the specified engine should treat a note as a chord, or separately.
