@@ -24,6 +24,8 @@ namespace YARG.Core.Engine.Vocals
 
         public PhraseHitEvent? OnPhraseHit;
 
+        protected override int WildcardMask => -1;
+
         /// <summary>
         /// Whether or not the player/bot has hit their mic in the current update.
         /// </summary>

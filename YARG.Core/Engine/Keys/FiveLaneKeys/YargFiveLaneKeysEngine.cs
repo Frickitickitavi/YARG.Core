@@ -10,6 +10,8 @@ namespace YARG.Core.Engine.Keys.Engines
 {
     public class YargFiveLaneKeysEngine : FiveLaneKeysEngine
     {
+        protected override int WildcardMask => (int)FiveFretGuitarFret.Wildcard;
+
         private KeyPressedTimes[] _keyPressedTimes = new KeyPressedTimes[7];
 
         public YargFiveLaneKeysEngine(InstrumentDifficulty<GuitarNote> chart, SyncTrack syncTrack,

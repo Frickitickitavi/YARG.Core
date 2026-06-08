@@ -74,6 +74,7 @@ namespace YARG.Core.Engine
         public int CurrentStarIndex { get; protected set; }
         public int CurrentWaitCountdownIndex { get; protected set; }
         public int CurrentCodaIndex { get; protected set; }
+        protected abstract int WildcardMask { get; }
 
         public bool IsSoloActive { get; protected set; }
         // Whether engine should be using coda behavior for overhit/miss/hit

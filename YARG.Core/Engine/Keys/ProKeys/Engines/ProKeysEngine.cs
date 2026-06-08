@@ -17,6 +17,8 @@ namespace YARG.Core.Engine.Keys
 
         protected override double[] KeyPressTimes { get; } = new double[(int) ProKeysAction.Key25 + 1];
 
+        protected override int WildcardMask => -1;
+
         public EngineTimer GetFatFingerTimer() => FatFingerTimer;
 
         protected ProKeysEngine(InstrumentDifficulty<ProKeysNote> chart, SyncTrack syncTrack,
