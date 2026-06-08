@@ -53,13 +53,44 @@ namespace YARG.Core.Chart
         private GuitarNote CreateFiveFretBeginnerNote(GuitarNote easyNote)
         {
             var generalFlags = ConvertFlagsForBeginner(easyNote.Flags);
-            return new GuitarNote(FiveFretGuitarFret.Wildcard, GuitarNoteType.Strum, GuitarNoteFlags.None, generalFlags, easyNote.Time, easyNote.TimeLength, easyNote.Tick, easyNote.TickLength);
+
+            uint tickLength;
+            double timeLength;
+
+            // Clip extended sustains to prevent overlapping wildcard sustains
+            if (easyNote.NextNote is not null && easyNote.NextNote.Tick < easyNote.TickEnd)
+            {
+                tickLength = easyNote.NextNote.Tick - easyNote.Tick;
+                timeLength = GetLengthInTime(easyNote.Time, easyNote.Tick, tickLength);
+            }
+            else
+            {
+                tickLength = easyNote.TickLength;
+                timeLength = easyNote.TimeLength;
+            }
+
+            return new GuitarNote(FiveFretGuitarFret.Wildcard, GuitarNoteType.Strum, GuitarNoteFlags.None, generalFlags, easyNote.Time, timeLength, easyNote.Tick, tickLength);
         }
 
         private GuitarNote CreateSixFretBeginnerNote(GuitarNote easyNote)
         {
             var generalFlags = ConvertFlagsForBeginner(easyNote.Flags);
-            return new GuitarNote(SixFretGuitarFret.Wildcard, GuitarNoteType.Strum, GuitarNoteFlags.None, generalFlags, easyNote.Time, easyNote.TimeLength, easyNote.Tick, easyNote.TickLength);
+            uint tickLength;
+            double timeLength;
+
+            // Clip extended sustains to prevent overlapping wildcard sustains
+            if (easyNote.NextNote is not null && easyNote.NextNote.Tick < easyNote.TickEnd)
+            {
+                tickLength = easyNote.NextNote.Tick - easyNote.Tick;
+                timeLength = GetLengthInTime(easyNote.Time, easyNote.Tick, tickLength);
+            }
+            else
+            {
+                tickLength = easyNote.TickLength;
+                timeLength = easyNote.TimeLength;
+            }
+
+            return new GuitarNote(SixFretGuitarFret.Wildcard, GuitarNoteType.Strum, GuitarNoteFlags.None, generalFlags, easyNote.Time, timeLength, easyNote.Tick, tickLength);
         }
 
         private GuitarNote CreateSixFretGuitarNote(MoonNote moonNote, Dictionary<MoonPhrase.Type, MoonPhrase> currentPhrases,
