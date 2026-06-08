@@ -19,6 +19,7 @@ namespace YARG.Core.Chart
     {
         private delegate TNote CreateNoteDelegate<TNote>(MoonNote moonNote, CurrentPhrases currentPhrases, List<TNote> notes)
             where TNote : Note<TNote>;
+        private delegate TNote CreateBeginnerNoteDelegate<TNote>(TNote easyNote) where TNote: Note<TNote>;
         private delegate void ProcessTextDelegate(MoonText text);
         private delegate Phrase? ValidatePhraseDelegate(Phrase phrase, List<Phrase> phrases);
         private delegate void FinalPassDelegate<TNote>(InstrumentDifficulty<TNote> chart) where TNote : Note<TNote>;
@@ -135,6 +136,56 @@ namespace YARG.Core.Chart
         public SyncTrack LoadSyncTrack()
         {
             return _moonSong.syncTrack;
+        }
+
+        private InstrumentDifficulty<TNote> LoadBeginner<TNote>(
+            Instrument instrument,
+            CreateBeginnerNoteDelegate<TNote> createNote,
+            InstrumentDifficulty<TNote> easyChart
+        ) where TNote: Note<TNote>
+        {
+            _currentMode = instrument.ToNativeGameMode();
+            _currentInstrument = instrument;
+            _currentDifficulty = Difficulty.Beginner;
+
+            _currentMoonMode = YargGameModeToMoonGameMode(_currentMode);
+            _currentMoonInstrument = YargInstrumentToMoonInstrument(_currentInstrument);
+            _currentMoonDifficulty = YargDifficultyToMoonDifficulty(_currentDifficulty);
+
+            var notes = new List<TNote>();
+            foreach (var easyNote in easyChart.Notes)
+            {
+                var beginnerNote = createNote(easyNote);
+                notes.Add(beginnerNote);
+            }
+
+            var phrases = new List<Phrase>();
+            foreach (var easyPhrase in easyChart.Phrases)
+            {
+                var phraseType = easyPhrase.Type switch
+                {
+                    PhraseType.TrillLane => PhraseType.TremoloLane, // Everything's a wildcard, so trills become wildcard tremolos
+                    _ => easyPhrase.Type // All other phrases can stay unmodified
+                };
+
+                var beginnerPhrase = new Phrase(
+                    phraseType,
+                    easyPhrase.Time,
+                    easyPhrase.TimeLength,
+                    easyPhrase.Tick,
+                    easyPhrase.TickLength
+                );
+
+                phrases.Add(beginnerPhrase);
+            }
+
+            var textEvents = new List<TextEvent>();
+            foreach (var easyTextEvent in easyChart.TextEvents)
+            {
+                textEvents.Add(easyTextEvent.Clone());
+            }
+
+            return new InstrumentDifficulty<TNote>(instrument, Difficulty.Beginner, notes, phrases, textEvents);
         }
 
         private InstrumentDifficulty<TNote> LoadDifficulty<TNote>(
@@ -577,6 +628,18 @@ namespace YARG.Core.Chart
             }
 
             return notesInPhrase;
+        }
+
+        // On Beginner, trill lanes become tremolos because they consist entirely of wildcardss
+        private static NoteFlags ConvertFlagsForBeginner(NoteFlags flags)
+        {
+            if ((flags & NoteFlags.Trill) != 0)
+            {
+                flags &= ~NoteFlags.Trill;
+                flags |= NoteFlags.Tremolo;
+            }
+
+            return flags;
         }
     }
 }

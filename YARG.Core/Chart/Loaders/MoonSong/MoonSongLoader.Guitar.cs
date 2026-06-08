@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using MoonscraperChartEditor.Song;
-using MoonscraperChartEditor.Song.IO;
-using YARG.Core.Chart.Events;
 
 namespace YARG.Core.Chart
 {
@@ -12,21 +10,27 @@ namespace YARG.Core.Chart
         {
             return instrument.ToNativeGameMode() switch
             {
-                GameMode.FiveFretGuitar => LoadGuitarTrack(instrument, CreateFiveFretGuitarNote),
-                GameMode.SixFretGuitar => LoadGuitarTrack(instrument, CreateSixFretGuitarNote),
+                GameMode.FiveFretGuitar => LoadGuitarTrack(instrument, CreateFiveFretGuitarNote, CreateFiveFretBeginnerNote),
+                GameMode.SixFretGuitar => LoadGuitarTrack(instrument, CreateSixFretGuitarNote, CreateSixFretBeginnerNote),
                 _ => throw new ArgumentException($"Instrument {instrument} is not a guitar instrument!")
             };
         }
 
-        private InstrumentTrack<GuitarNote> LoadGuitarTrack(Instrument instrument, CreateNoteDelegate<GuitarNote> createNote)
+        private InstrumentTrack<GuitarNote> LoadGuitarTrack(Instrument instrument, CreateNoteDelegate<GuitarNote> createNote, CreateBeginnerNoteDelegate<GuitarNote> createBeginnerNote)
         {
+            var expert = LoadDifficulty(instrument, Difficulty.Expert, createNote, null, ValidateGuitarPhrase, GuitarFinalPass);
+            var hard = LoadDifficulty(instrument, Difficulty.Hard, createNote, null, ValidateGuitarPhrase, GuitarFinalPass);
+            var medium = LoadDifficulty(instrument, Difficulty.Medium, createNote, null, ValidateGuitarPhrase, GuitarFinalPass);
+            var easy = LoadDifficulty(instrument, Difficulty.Easy, createNote, null, ValidateGuitarPhrase, GuitarFinalPass);
+            var beginner = LoadBeginner(instrument, createBeginnerNote, easy);
+
             var difficulties = new Dictionary<Difficulty, InstrumentDifficulty<GuitarNote>>()
             {
-                { Difficulty.Beginner, LoadDifficulty<GuitarNote>(instrument, Difficulty.Beginner, CreateFiveFretBeginnerNote, null, ValidateGuitarPhrase, null) }, // No lanes on Beginner, so no final pass
-                { Difficulty.Easy, LoadDifficulty(instrument, Difficulty.Easy, createNote, null, ValidateGuitarPhrase, null) }, // No lanes on Easy, so no final pass
-                { Difficulty.Medium, LoadDifficulty(instrument, Difficulty.Medium, createNote, null, ValidateGuitarPhrase, null) }, // No lanes on Medium, so no final pass
-                { Difficulty.Hard, LoadDifficulty(instrument, Difficulty.Hard, createNote, null, ValidateGuitarPhrase, GuitarFinalPass) },
-                { Difficulty.Expert, LoadDifficulty(instrument, Difficulty.Expert, createNote, null, ValidateGuitarPhrase, GuitarFinalPass) },
+                { Difficulty.Beginner, beginner },
+                { Difficulty.Easy, easy },
+                { Difficulty.Medium, medium },
+                { Difficulty.Hard, hard },
+                { Difficulty.Expert, expert },
             };
 
             var track = new InstrumentTrack<GuitarNote>(instrument, difficulties, GetAnimationTrack(instrument));
@@ -46,16 +50,16 @@ namespace YARG.Core.Chart
             return new GuitarNote(fret, noteType, guitarFlags, generalFlags, time, GetLengthInTime(moonNote), moonNote.tick, moonNote.length);
         }
 
-        private GuitarNote CreateFiveFretBeginnerNote(MoonNote moonNote, Dictionary<MoonPhrase.Type, MoonPhrase> currentPhrases,
-            List<GuitarNote> notes)
+        private GuitarNote CreateFiveFretBeginnerNote(GuitarNote easyNote)
         {
-            var fret = FiveFretGuitarFret.Wildcard;
-            var noteType = GuitarNoteType.Strum;
-            var generalFlags = GetGeneralFlags(moonNote, currentPhrases);
-            var guitarFlags = GuitarNoteFlags.None;
+            var generalFlags = ConvertFlagsForBeginner(easyNote.Flags);
+            return new GuitarNote(FiveFretGuitarFret.Wildcard, GuitarNoteType.Strum, GuitarNoteFlags.None, generalFlags, easyNote.Time, easyNote.TimeLength, easyNote.Tick, easyNote.TickLength);
+        }
 
-            double time = _moonSong.TickToTime(moonNote.tick);
-            return new GuitarNote(fret, noteType, guitarFlags, generalFlags, time, GetLengthInTime(moonNote), moonNote.tick, moonNote.length);
+        private GuitarNote CreateSixFretBeginnerNote(GuitarNote easyNote)
+        {
+            var generalFlags = ConvertFlagsForBeginner(easyNote.Flags);
+            return new GuitarNote(SixFretGuitarFret.Wildcard, GuitarNoteType.Strum, GuitarNoteFlags.None, generalFlags, easyNote.Time, easyNote.TimeLength, easyNote.Tick, easyNote.TickLength);
         }
 
         private GuitarNote CreateSixFretGuitarNote(MoonNote moonNote, Dictionary<MoonPhrase.Type, MoonPhrase> currentPhrases,

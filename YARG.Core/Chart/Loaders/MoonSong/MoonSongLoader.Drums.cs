@@ -29,18 +29,26 @@ namespace YARG.Core.Chart
 
         private InstrumentTrack<DrumNote> LoadDrumsTrack(Instrument instrument, CreateNoteDelegate<DrumNote> createNote, InstrumentTrack<EliteDrumNote>? eliteDrumsFallback)
         {
-            CreateNoteDelegate<DrumNote> beginnerNoteDelegate = instrument is Instrument.FourLaneDrums
+            CreateBeginnerNoteDelegate<DrumNote> beginnerNoteDelegate = instrument is Instrument.FourLaneDrums
                 ? CreateFourLaneDrumBeginnerNote
                 : CreateFiveLaneDrumBeginnerNote;
 
+
+            var expertPlus = LoadDifficulty(instrument, Difficulty.ExpertPlus, createNote, HandleTextEvent, finalPassDelegate: DrumsFinalPass);
+            var expert = LoadDifficulty(instrument, Difficulty.Expert, createNote, HandleTextEvent, finalPassDelegate: DrumsFinalPass);
+            var hard = LoadDifficulty(instrument, Difficulty.Hard, createNote, HandleTextEvent, finalPassDelegate: DrumsFinalPass);
+            var medium = LoadDifficulty(instrument, Difficulty.Medium, createNote, HandleTextEvent, finalPassDelegate: DrumsFinalPass);
+            var easy = LoadDifficulty(instrument, Difficulty.Easy, createNote, HandleTextEvent, finalPassDelegate: DrumsFinalPass);
+            var beginner = LoadBeginner(instrument, beginnerNoteDelegate, easy);
+
             var difficulties = new Dictionary<Difficulty, InstrumentDifficulty<DrumNote>>()
             {
-                { Difficulty.Beginner, LoadDifficulty(instrument, Difficulty.Beginner, beginnerNoteDelegate, HandleTextEvent) }, // No lanes on Beginner, so no final pass
-                { Difficulty.Easy, LoadDifficulty(instrument, Difficulty.Easy, createNote, HandleTextEvent, finalPassDelegate: DrumsFinalPass) }, // Drum lanes on Easy are possible in .chart, so we do need the final pass
-                { Difficulty.Medium, LoadDifficulty(instrument, Difficulty.Medium, createNote, HandleTextEvent, finalPassDelegate: DrumsFinalPass) }, // Drum lanes on Medium are possible in .chart, so we do need the final pass
-                { Difficulty.Hard, LoadDifficulty(instrument, Difficulty.Hard, createNote, HandleTextEvent, finalPassDelegate: DrumsFinalPass) },
-                { Difficulty.Expert, LoadDifficulty(instrument, Difficulty.Expert, createNote, HandleTextEvent, finalPassDelegate: DrumsFinalPass) },
-                { Difficulty.ExpertPlus, LoadDifficulty(instrument, Difficulty.ExpertPlus, createNote, HandleTextEvent, finalPassDelegate: DrumsFinalPass) },
+                { Difficulty.Beginner, beginner },
+                { Difficulty.Easy, easy },
+                { Difficulty.Medium, medium },
+                { Difficulty.Hard, hard },
+                { Difficulty.Expert, expert },
+                { Difficulty.ExpertPlus, expertPlus },
             };
 
             foreach (var difficulty in difficulties)
@@ -62,14 +70,21 @@ namespace YARG.Core.Chart
                 {
                     _settings.DrumsType = DrumsType.FourLane;
 
+                    expertPlus = LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.ExpertPlus, createNote, HandleTextEvent);
+                    expert = LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.Expert, createNote, HandleTextEvent);
+                    hard = LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.Hard, createNote, HandleTextEvent);
+                    medium = LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.Medium, createNote, HandleTextEvent);
+                    easy = LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.Easy, createNote, HandleTextEvent);
+                    beginner = LoadBeginner(instrument, beginnerNoteDelegate, easy);
+
                     difficulties = new Dictionary<Difficulty, InstrumentDifficulty<DrumNote>>()
                     {
-                        { Difficulty.Beginner, LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.Easy, beginnerNoteDelegate, HandleTextEvent) },
-                        { Difficulty.Easy, LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.Easy, createNote, HandleTextEvent)},
-                        { Difficulty.Medium, LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.Medium, createNote, HandleTextEvent)},
-                        { Difficulty.Hard, LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.Hard, createNote, HandleTextEvent)},
-                        { Difficulty.Expert, LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.Expert, createNote, HandleTextEvent)},
-                        { Difficulty.ExpertPlus, LoadFromEliteDrumsDownchartDifficulty(instrument, Difficulty.ExpertPlus, createNote, HandleTextEvent)},
+                        { Difficulty.Beginner, beginner },
+                        { Difficulty.Easy, easy },
+                        { Difficulty.Medium, medium },
+                        { Difficulty.Hard, hard },
+                        { Difficulty.Expert, expert},
+                        { Difficulty.ExpertPlus, expertPlus},
                     };
                 }
             }
@@ -146,27 +161,16 @@ namespace YARG.Core.Chart
             return new DrumNote(pad, noteType, drumFlags, generalFlags, time, moonNote.tick, isDoubleKick);
         }
 
-        private DrumNote CreateFourLaneDrumBeginnerNote(MoonNote moonNote, Dictionary<MoonPhrase.Type, MoonPhrase> currentPhrases, List<DrumNote> notes)
+        private DrumNote CreateFourLaneDrumBeginnerNote(DrumNote easyNote)
         {
-            const FourLaneDrumPad pad = FourLaneDrumPad.Wildcard;
-            const DrumNoteType noteType = DrumNoteType.Neutral;
-
-            var generalFlags = GetGeneralFlags(moonNote, currentPhrases) & NO_LANE_FLAGS;
-            var drumFlags = GetDrumNoteFlags(moonNote, currentPhrases);
-
-            double time = _moonSong.TickToTime(moonNote.tick);
-            return new DrumNote(pad, noteType, drumFlags, generalFlags, time, moonNote.tick, false);
+            var generalFlags = ConvertFlagsForBeginner(easyNote.Flags);
+            return new DrumNote(FourLaneDrumPad.Wildcard, DrumNoteType.Neutral, easyNote.DrumFlags, generalFlags, easyNote.Time, easyNote.Tick, false);
         }
 
-        private DrumNote CreateFiveLaneDrumBeginnerNote(MoonNote moonNote, Dictionary<MoonPhrase.Type, MoonPhrase> currentPhrases, List<DrumNote> notes)
+        private DrumNote CreateFiveLaneDrumBeginnerNote(DrumNote easyNote)
         {
-            const FiveLaneDrumPad pad = FiveLaneDrumPad.Wildcard;
-            const DrumNoteType noteType = DrumNoteType.Neutral;
-            var generalFlags = GetGeneralFlags(moonNote, currentPhrases) & NO_LANE_FLAGS;
-            var drumFlags = GetDrumNoteFlags(moonNote, currentPhrases);
-
-            double time = _moonSong.TickToTime(moonNote.tick);
-            return new DrumNote(pad, noteType, drumFlags, generalFlags, time, moonNote.tick, false);
+            var generalFlags = ConvertFlagsForBeginner(easyNote.Flags);
+            return new DrumNote(FiveLaneDrumPad.Wildcard, DrumNoteType.Neutral, easyNote.DrumFlags, generalFlags, easyNote.Time, easyNote.Tick, false);
         }
 
         private void HandleTextEvent(MoonText text)
@@ -436,13 +440,13 @@ namespace YARG.Core.Chart
 
         private static void DrumsFinalPass(InstrumentDifficulty<DrumNote> chart)
         {
-            var noteIndex = 0;
-
             // All we're here to do is assemble lane phrases, so if there aren't any notes or phrases, then we have nothing to do
             if (chart.Phrases.Count == 0 || chart.Notes.Count == 0)
             {
                 return;
             }
+
+            var noteIndex = 0;
            
             foreach (var phrase in chart.Phrases)
             {

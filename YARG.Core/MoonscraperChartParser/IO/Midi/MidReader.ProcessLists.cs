@@ -771,10 +771,25 @@ namespace MoonscraperChartEditor.Song.IO
                     }
 
                     ProcessNoteOnEventAsSpecialPhrase(ref processParams, phraseType, MoonSong.Difficulty.Expert);
-                    if ((int)noteEvent.Velocity is >= 41 and <= 50)
+                    if ((int)noteEvent.Velocity is <= 50)
                     {
-                        ProcessNoteOnEventAsSpecialPhrase(ref processParams, phraseType, MoonSong.Difficulty.Hard);
+                        if ((int) noteEvent.Velocity is >= 41)
+                        {
+                            ProcessNoteOnEventAsSpecialPhrase(ref processParams, phraseType, MoonSong.Difficulty.Hard);
+                        }
+
+                        if ((int) noteEvent.Velocity is >= 31)
+                        {
+                            ProcessNoteOnEventAsSpecialPhrase(ref processParams, phraseType, MoonSong.Difficulty.Medium);
+                        }
+
+                        if ((int) noteEvent.Velocity is >= 21)
+                        {
+                            ProcessNoteOnEventAsSpecialPhrase(ref processParams, phraseType, MoonSong.Difficulty.Easy);
+                        }
                     }
+
+                    
                 }
 
                 processMap.Add(MidIOHelper.TREMOLO_LANE_NOTE, (ref EventProcessParams eventProcessParams) => {
