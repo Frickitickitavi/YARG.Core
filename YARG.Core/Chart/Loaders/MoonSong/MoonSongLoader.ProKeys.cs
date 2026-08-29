@@ -81,36 +81,99 @@ namespace YARG.Core.Chart
             {
                 var phrase = chart.Phrases[phraseIndex];
 
-                // Pro Keys does not support tremolos. Glissando phrases are handled earlier, since they don't require complex adjacent-note validation logic
-                if (phrase.Type is not PhraseType.TrillLane)
+                // Glissando phrases are handled earlier, since they don't require complex adjacent-note validation logic
+                if (phrase.Type is not (PhraseType.TrillLane or PhraseType.TremoloLane))
                 {
                     continue;
                 }
 
                 var notesInPhrase = GetNotesInLanePhrase(chart.Phrases, phraseIndex, chart.Notes, noteIndex, out noteIndex, false);
 
-                var laneNotes = GetProKeysTrillNotes(notesInPhrase);
+                List<ProKeysNote> laneNotes = phrase.Type switch
+                {
+                    PhraseType.TrillLane => GetProKeysTrillNotes(notesInPhrase),
+                    PhraseType.TremoloLane => GetProKeysTremoloNotes(notesInPhrase),
+                    _ => throw new ArgumentOutOfRangeException("Unreachable.")
+                };
 
                 if (laneNotes.Count > 0)
                 {
-                    // Unlike for guitar, we don't need to iterate through all children here since we're only handling trills. If there were child notes to
-                    // iterate through, then we wouldn't have validated these as trill notes in the first place because trills don't support chords
-
-                    // Apply lane start flag
-                    laneNotes[0].ActivateFlag(NoteFlags.LaneStart);
+                    // Apply lane start flag to entire starting note
+                    foreach (var startChild in laneNotes[0].AllNotes)
+                    {
+                        startChild.ActivateFlag(NoteFlags.LaneStart);
+                    }
 
                     // Cut sustains for all but the last note
                     foreach (var laneNote in laneNotes.GetRange(0, laneNotes.Count - 1))
                     {
-                        laneNote.TickLength = 0;
-                        laneNote.TimeLength = 0;
+                        foreach (var child in laneNote.AllNotes)
+                        {
+                            child.TickLength = 0;
+                            child.TimeLength = 0;
+                        }
                     }
 
                     // Apply lane end flag
-                    laneNotes[^1].ActivateFlag(NoteFlags.LaneEnd);
+                    foreach (var endChild in laneNotes[^1].AllNotes)
+                    {
+                        endChild.ActivateFlag(NoteFlags.LaneEnd);
+                    }
                 }
+
             }
         }
+
+        // Takes all notes that are supposedly inside a PK tremolo phrase and validates them.
+        // Activates the Tremolo flag for all notes in the phrase that constitute a valid tremolo
+        //   -For a well-formed chart, this will be all of them
+        //   -If the chart is malformed, the tremolo might terminate earlier than the supposed end of the phrase or be invalidated altogether
+        // Returns the list of all marked notes. ProKeysFinalPass will assign the LaneStart and LaneEnd flags (shared behavior with trills)
+        //
+        // A PK tremolo must consist of exactly one notemask, repeated at least twice
+        // If the tremolo's notemask changes on the second note, it's not a valid tremolo
+        // If the notemask changes later in the tremolo, the tremolo is terminated there
+        private static List<ProKeysNote> GetProKeysTremoloNotes(List<ProKeysNote> notesInPhrase)
+        {
+            static void AddToTremolo(ProKeysNote note, List<ProKeysNote> tremolo)
+            {
+                foreach (var child in note.AllNotes)
+                {
+                    child.ActivateFlag(NoteFlags.Tremolo);
+                }
+
+                tremolo.Add(note);
+            }
+
+            List<ProKeysNote> tremoloNotes = new();
+
+            if (notesInPhrase.Count < 2 || notesInPhrase[0].NoteMask != notesInPhrase[1].NoteMask)
+            {
+                // This tremolo doesn't start with two matching masks, so it's invalid. Return an empty list (no tremolo)
+                return tremoloNotes;
+            }
+
+            // The first two notes are now pre-cleared, so no need to check their masks again
+            AddToTremolo(notesInPhrase[0], tremoloNotes);
+            AddToTremolo(notesInPhrase[1], tremoloNotes);
+
+            // Go through all further notes in the phrase and add them to the tremolo as long as the mask doesn't change
+            for (var i = 2; i < notesInPhrase.Count; i++)
+            {
+                var note = notesInPhrase[i];
+
+                if (notesInPhrase[i].NoteMask != notesInPhrase[0].NoteMask)
+                {
+                    // We found a mask that doesn't fit the tremolo; terminate early
+                    break;
+                }
+
+                AddToTremolo(note, tremoloNotes);
+            }
+
+            return tremoloNotes;
+        }
+
 
         // Takes all notes that are supposedly inside a Pro Keys trill phrase and validates them
         // Activates the Trill flag for all notes in the phrase that constitute a valid trill

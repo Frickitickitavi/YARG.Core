@@ -341,7 +341,6 @@ namespace YARG.Core.Chart
             AddToTremolo(notesInPhrase[1], tremoloNotes);
 
             // Go through all further notes in the phrase and add them to the tremolo as long as the mask doesn't change
-
             for (var i = 2; i < notesInPhrase.Count; i++)
             {
                 var note = notesInPhrase[i];

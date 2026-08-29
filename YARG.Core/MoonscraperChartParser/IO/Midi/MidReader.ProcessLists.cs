@@ -1227,7 +1227,10 @@ namespace MoonscraperChartEditor.Song.IO
                     ProcessNoteOnEventAsSpecialPhrase(ref eventProcessParams,
                         MoonPhrase.Type.ProKeys_RangeShift5, eventProcessParams.trackDifficulty)
                 },
-
+                { MidIOHelper.PRO_KEYS_TREMOLO_LANE_NOTE, (ref EventProcessParams eventProcessParams) =>
+                    ProcessNoteOnEventAsSpecialPhrase(ref eventProcessParams,
+                        MoonPhrase.Type.TremoloLane, eventProcessParams.trackDifficulty)
+                },
                 { MidIOHelper.PRO_KEYS_GLISSANDO, (ref EventProcessParams eventProcessParams) =>
                     ProcessNoteOnEventAsSpecialPhrase(ref eventProcessParams,
                         MoonPhrase.Type.ProKeys_Glissando, eventProcessParams.trackDifficulty)
