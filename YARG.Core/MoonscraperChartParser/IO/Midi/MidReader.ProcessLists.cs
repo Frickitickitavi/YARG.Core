@@ -62,7 +62,7 @@ namespace MoonscraperChartEditor.Song.IO
         {
             soloNote = MidIOHelper.SOLO_NOTE,
             versusPhrases = false,
-            lanePhrases = false,
+            lanePhrases = true,
         };
 
         private static readonly CommonPhraseSettings ProGuitarPhraseSettings = new()
